@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;background:#f0f2f8;font-size:13px;color:#1a202c}
+body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;background:#f0f2f8;font-size:14px;color:#1a202c}
 
 
 /* ── 슬라이드 패널 ── */
@@ -84,7 +84,7 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;
 .nav-item{padding:7px 14px;font-size:12px;color:#94a3b8;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .12s}
 .nav-item:hover{background:#252b3b;color:#e2e8f0}
 .nav-item.active{background:rgba(67,97,238,.2);color:#c7d2fe;border-left:2px solid #4361ee}
-.nav-sub{padding:6px 14px 6px 28px;font-size:11px;color:#7a8fa8;cursor:pointer;transition:all .1s;border-left:2px solid transparent}
+.nav-sub{padding:7px 14px 7px 28px;font-size:12px;color:#7a8fa8;cursor:pointer;transition:all .1s;border-left:2px solid transparent}
 .nav-sub:hover{background:#252b3b;color:#cbd5e1}
 .nav-sub.active{color:#e2e8f0;font-weight:600;background:#252b3b}
 .nav-div{height:1px;background:#2d3548;margin:5px 0}
@@ -104,8 +104,8 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;
 .kpi:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .kpi.ab{border-top-color:#4361ee}.kpi.ag{border-top-color:#10b981}.kpi.am{border-top-color:#06b6d4}
 .kpi.ap{border-top-color:#8b5cf6}.kpi.ar{border-top-color:#ef4444}.kpi.aa{border-top-color:#f59e0b}.kpi.ax{border-top-color:#ec4899}
-.kpi-lbl{font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi-val{font-size:16px;font-weight:700;color:#1a202c;line-height:1}
+.kpi-lbl{font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-val{font-size:18px;font-weight:700;color:#1a202c;line-height:1}
 .kpi-delta{font-size:10px;margin-top:3px}
 .din{color:#4361ee}.dmu{color:#94a3b8}.dwa{color:#f59e0b}
 
@@ -121,7 +121,7 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;
 .dash-bot{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px}
 .card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.card-title{font-size:12px;font-weight:700;color:#1a202c}
+.card-title{font-size:13px;font-weight:700;color:#1a202c}
 .card-hint{font-size:10px;color:#94a3b8}
 .chart-box{height:120px;position:relative}
 .leg-row{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap}
@@ -207,9 +207,9 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;
 .user-actions{display:flex;gap:8px;align-items:center}
 
 /* ── 테이블 ── */
-table{width:100%;border-collapse:collapse;font-size:11px}
-thead th{font-size:9px;font-weight:700;color:#94a3b8;padding:5px 8px;text-align:left;border-bottom:1px solid #f1f5f9;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-tbody td{padding:7px 8px;border-bottom:1px solid #f8fafc;color:#1a202c;vertical-align:middle}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{font-size:10px;font-weight:700;color:#94a3b8;padding:5px 8px;text-align:left;border-bottom:1px solid #f1f5f9;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+tbody td{padding:8px 10px;border-bottom:1px solid #f8fafc;color:#1a202c;vertical-align:middle}
 tbody tr:last-child td{border:none}
 tbody tr:hover td{background:#f8faff}
 .av{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
@@ -231,11 +231,11 @@ tbody tr:hover td{background:#f8faff}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .fr3{grid-template-columns:1fr 1fr 1fr}.fr4{grid-template-columns:1fr 1fr 1fr 1fr}
 .fg{display:flex;flex-direction:column;gap:3px}
-.flbl{font-size:10px;font-weight:600;color:#64748b}
-.fi{padding:6px 9px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;font-family:inherit;outline:none;transition:border .12s;width:100%}
+.flbl{font-size:11px;font-weight:600;color:#64748b}
+.fi{padding:7px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;outline:none;transition:border .12s;width:100%}
 .fi:focus{border-color:#4361ee}
 select.fi{background:#fff;cursor:pointer}
-.btn{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .12s}
+.btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .12s}
 .btn-p{background:#4361ee;color:#fff}.btn-p:hover{background:#3451d1}
 .btn-g{background:#f1f5f9;color:#374151;border:1px solid #e2e8f0}.btn-g:hover{background:#e2e8f0}
 .btn-sm{padding:3px 8px;font-size:10px;border-radius:5px}
@@ -824,9 +824,11 @@ async function initApp(user){
   try { applyPermissions(); } catch(e){ console.warn('applyPermissions:', e); }
   try { await fillAll(); } catch(e){ console.warn('fillAll:', e); }
   try { await renderDash(); } catch(e){ console.warn('renderDash:', e); }
+  try { setupRealtime(); } catch(e){ console.warn('realtime:', e); }
 }
 
 async function doLogout(){
+  supabase_realtime_cleanup();
   await sb.auth.signOut();
   currentUser = null; currentProfile = null;
   document.getElementById('app').classList.remove('show');
@@ -846,12 +848,66 @@ async function doForgot(){
   document.getElementById('forgot-msg').style.color = error ? '#ef4444' : '#10b981';
 }
 
-// 세션 복원
+
+// ── 실시간 반영 (Supabase Realtime) ──────────────────────────
+let realtimeChannel = null;
+function setupRealtime(){
+  if(realtimeChannel) supabase_realtime_cleanup();
+  realtimeChannel = sb.channel('hkcloud-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_billings'},()=>{
+      const activePage = document.querySelector('.page.active')?.id;
+      if(activePage==='page-dashboard') renderDash();
+      if(activePage==='page-tax') renderTax();
+      if(activePage==='page-si-sales') renderSISales();
+      if(activePage==='page-se-sales') renderSESales();
+      if(activePage==='page-closing') renderClosing();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_accounts'},()=>{
+      const activePage = document.querySelector('.page.active')?.id;
+      if(activePage==='page-accounts') renderAcc();
+      fillAll();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_si_projects'},()=>{
+      const activePage = document.querySelector('.page.active')?.id;
+      if(activePage==='page-si-project') renderSIProject();
+      if(activePage==='page-si-kanban') renderKanban();
+      if(activePage==='page-si-pnl') renderPnL();
+      fillAll();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_se_contracts'},()=>{
+      const activePage = document.querySelector('.page.active')?.id;
+      if(activePage==='page-se-contract') renderSEContract();
+      if(activePage==='page-se-renew') renderSERenew();
+      fillAll();
+    })
+    .subscribe();
+}
+function supabase_realtime_cleanup(){
+  if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel=null; }
+}
+
+// 세션 복원 및 유지
 sb.auth.onAuthStateChange(async(event,session)=>{
+  if(event==='SIGNED_IN' && session?.user && !currentUser){
+    await initApp(session.user);
+  }
+  if(event==='SIGNED_OUT'){
+    currentUser=null; currentProfile=null;
+    document.getElementById('app').classList.remove('show');
+    document.getElementById('login-screen').style.display='flex';
+  }
+  if(event==='TOKEN_REFRESHED' && session?.user){
+    currentUser=session.user;
+  }
+});
+
+// 페이지 로드 시 기존 세션 확인
+(async()=>{
+  const {data:{session}} = await sb.auth.getSession();
   if(session?.user && !currentUser){
     await initApp(session.user);
   }
-});
+})();
 
 // ── 영업담당 (DB) ─────────────────────────────────────────────
 async function getReps(){
