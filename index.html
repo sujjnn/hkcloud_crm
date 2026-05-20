@@ -804,23 +804,26 @@ async function doLogin(){
 
 async function initApp(user){
   currentUser = user;
-  // 프로필 조회
-  const {data:profile} = await sb.from('hkcloud_profiles').select('*').eq('id',user.id).single();
-  currentProfile = profile;
-  // 첫 admin 설정 (가입 첫 사용자)
-  if(!profile || !profile.role){
-    const {count} = await sb.from('hkcloud_profiles').select('*',{count:'exact',head:true});
-    if(count===1){
-      await sb.from('hkcloud_profiles').update({role:'admin',name:user.email.split('@')[0]}).eq('id',user.id);
-      currentProfile = {...profile, role:'admin'};
+  try {
+    const {data:profile} = await sb.from('hkcloud_profiles').select('*').eq('id',user.id).single();
+    currentProfile = profile;
+    if(!profile || !profile.role){
+      await sb.from('hkcloud_profiles').upsert({
+        id:user.id, email:user.email,
+        name:user.email.split('@')[0], role:'admin'
+      },{onConflict:'id'});
+      currentProfile = {id:user.id, email:user.email, name:user.email.split('@')[0], role:'admin'};
     }
+  } catch(e){
+    currentProfile = {id:user.id, email:user.email, name:user.email, role:'viewer'};
+    console.warn('프로필 조회 오류:', e);
   }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').classList.add('show');
   document.getElementById('header-user').textContent = currentProfile?.name || user.email;
-  applyPermissions();
-  await fillAll();
-  await renderDash();
+  try { applyPermissions(); } catch(e){ console.warn('applyPermissions:', e); }
+  try { await fillAll(); } catch(e){ console.warn('fillAll:', e); }
+  try { await renderDash(); } catch(e){ console.warn('renderDash:', e); }
 }
 
 async function doLogout(){
