@@ -151,12 +151,12 @@ tbody tr:hover td{background:#f8faff}
   <!-- 상단: KPI 3개 + 필터 -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;margin-bottom:12px;align-items:stretch">
     <div class="kc kb">
-      <div class="kl">이번달 매출</div>
+      <div class="kl">총 매출</div>
       <div class="kv" id="k-sale" style="color:#4361ee">-</div>
       <div class="ks">VAT 포함</div>
     </div>
     <div class="kc kr">
-      <div class="kl">이번달 손익</div>
+      <div class="kl">총 손익</div>
       <div class="kv" id="k-pnl">-</div>
       <div class="ks">매출 - 매입 - 제경비</div>
     </div>
@@ -525,8 +525,8 @@ async function renderDash(){
   const fproj=document.getElementById('f-proj')?.value||'';
   const fstatus=document.getElementById('f-status')?.value||'';
 
-  // 프로젝트 필터 드롭다운 채우기 (SI 프로젝트 + 단품, SE는 통합)
-  const {data:siProjs=[]}=await sb.from('hkcloud_si_projects').select('id,name,account_name,stage').order('name');
+  // 프로젝트 필터 드롭다운
+  const {data:siProjs=[]}=await sb.from('hkcloud_si_projects').select('id,name,account_name').order('name');
   const {data:pdProjs=[]}=await sb.from('hkcloud_prod_sales').select('id,name').order('name');
   const fp=document.getElementById('f-proj');
   if(fp){
@@ -538,16 +538,15 @@ async function renderDash(){
     if(cur)fp.value=cur;
   }
 
-  // 기간 설정
-  let dateFrom=yr+'-01-01', dateTo=yr+'-12-31';
+  // 기간: 필터 월 선택 시 해당 월, 없으면 연간
+  let dateFrom=yr+'-01-01',dateTo=yr+'-12-31';
   if(fmonth){const m=fmonth.replace('월','').padStart(2,'0');dateFrom=`${yr}-${m}-01`;dateTo=`${yr}-${m}-31`;}
 
-  // billing 쿼리
+  // billing 데이터
   let bq=sb.from('hkcloud_billings').select('*').gte('bill_date',dateFrom).lte('bill_date',dateTo);
   if(ftype)bq=bq.eq('source_type',ftype);
   const {data:bills=[]}=await bq;
 
-  // 프로젝트/진행여부 필터 적용
   let filtered=bills;
   if(fproj){
     if(fproj.startsWith('si-')){const pid=parseInt(fproj.replace('si-',''));filtered=filtered.filter(b=>b.source_type==='SI'&&b.source_id===pid);}
@@ -557,7 +556,7 @@ async function renderDash(){
   if(fstatus==='active')filtered=filtered.filter(b=>b.status!=='입금완료');
   else if(fstatus==='done')filtered=filtered.filter(b=>b.status==='입금완료');
 
-  // 매입/제경비
+  // 매입/제경비 (연간 or 선택월)
   const [{data:sip=[]},{data:sep=[]},{data:pdp=[]},{data:exps=[]}]=await Promise.all([
     sb.from('hkcloud_si_purchases').select('amount').gte('issue_date',dateFrom).lte('issue_date',dateTo),
     sb.from('hkcloud_se_purchases').select('amount').gte('issue_date',dateFrom).lte('issue_date',dateTo),
@@ -569,22 +568,22 @@ async function renderDash(){
   const totalBuy=sip.reduce((s,p)=>s+(p.amount||0),0)+sep.reduce((s,p)=>s+(p.amount||0),0)+pdp.reduce((s,p)=>s+(p.amount||0),0);
   const totalExp=exps.reduce((s,e)=>s+(e.amount||0),0);
   const pnl=totalSale-totalBuy-totalExp;
-  const niCnt=bills.filter(b=>b.status==='미발행'||b.status==='검수대기').length;
 
+  // 이번달 미발행 건수
+  const ym=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  const {data:niRows=[]}=await sb.from('hkcloud_billings').select('id').gte('bill_date',ym+'-01').lte('bill_date',ym+'-31').in('status',['미발행','검수대기']);
+  const niCnt=niRows.length;
+
+  const label=fmonth||yr+'년 전체';
   document.getElementById('k-sale').textContent=fmtA(totalSale);
   const pe=document.getElementById('k-pnl');
   pe.textContent=(pnl>=0?'+':'')+fmtA(pnl);
   pe.style.color=pnl>=0?'#10b981':'#ef4444';
   document.getElementById('k-ni').textContent=niCnt+'건';
 
-  // 막대차트 (필터 반영)
+  // 막대차트 (연간 고정)
   const {data:yb=[]}=await sb.from('hkcloud_billings').select('source_type,bill_date,amount').gte('bill_date',yr+'-01-01').lte('bill_date',yr+'-12-31');
   const {data:ybuy=[]}=await sb.from('hkcloud_si_purchases').select('amount,issue_date').gte('issue_date',yr+'-01-01').lte('issue_date',yr+'-12-31');
-
-  const siY=yb.filter(b=>b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0);
-  const seY=yb.filter(b=>b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0);
-  const pdY=yb.filter(b=>b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0);
-  const buyY=ybuy.reduce((s,b)=>s+(b.amount||0),0);
 
   const lbl=[],siA=[],seA=[],pdA=[],buA=[];
   for(let m=1;m<=12;m++){
@@ -601,49 +600,50 @@ async function renderDash(){
     if(els.length){
       const mi=els[0].index;
       const p=`${yr}-${String(mi+1).padStart(2,'0')}`;
-      const mSI=yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0);
-      const mSE=yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0);
-      const mPD=yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0);
-      updateDonut(mSI,mSE,mPD,siY+seY+pdY,(mi+1)+'월');
+      const mSale=yb.filter(b=>b.bill_date?.startsWith(p)).reduce((s,b)=>s+(b.amount||0),0);
+      const mBuy=ybuy.filter(b=>b.issue_date?.startsWith(p)).reduce((s,b)=>s+(b.amount||0),0);
+      updateDonut(mSale,mBuy,0,(mi+1)+'월');
     }else{
-      updateDonut(siY,seY,pdY,siY+seY+pdY,yr+'년');
+      updateDonut(totalSale,totalBuy,totalExp,label);
     }
   }}});
 
-  updateDonut(siY,seY,pdY,siY+seY+pdY,yr+'년');
+  updateDonut(totalSale,totalBuy,totalExp,label);
   await renderDashBottom(bills);
 }
 
-function updateDonut(siV,seV,pdV,totSale,label){
-  // 구성비: 영업이익 / 매입비율 / 제경비비율
-  // 여기서는 SI/SE/단품 구성비로 표시
-  const tot=siV+seV+pdV||1;
-  const pct=v=>Math.round(v/tot*100);
-  const vals=[siV/10000||0.001,seV/10000||0.001,pdV/10000||0.001];
+function updateDonut(sale,buy,exp,label){
+  // 구성비: 매입비율 / 제경비율 / 영업이익율
+  const s=sale||1;
+  const buyR=Math.round(buy/s*100);
+  const expR=Math.round(exp/s*100);
+  const profR=Math.max(0,100-buyR-expR);
+  const vals=[buy/10000||0.001, exp/10000||0.001, Math.max(sale-buy-exp,0)/10000||0.001];
   if(window.donutC&&window.donutC.data){
     window.donutC.data.datasets[0].data=vals;
     window.donutC.update();
   }else{
     const dc=document.getElementById('donutC');if(!dc)return;
-    window.donutC=new Chart(dc,{type:'doughnut',data:{datasets:[{data:vals,backgroundColor:['#4361ee','#06b6d4','#10b981'],borderWidth:0,hoverOffset:3}]},options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${['SI','SE','단품'][c.dataIndex]}: ${fmt(c.parsed*10000)}만원`}}},animation:{duration:300}}});
+    window.donutC=new Chart(dc,{type:'doughnut',data:{datasets:[{data:vals,backgroundColor:['#f87171','#a78bfa','#10b981'],borderWidth:0,hoverOffset:3}]},options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const nm=['매입','제경비','영업이익'][c.dataIndex];return`${nm}: ${fmt(c.parsed*10000)}만원`}}}},animation:{duration:300}}});
   }
-  document.getElementById('donut-total').textContent=fmt(tot);
+  document.getElementById('donut-total').textContent=fmt(sale);
   document.getElementById('donut-yr').textContent=label;
   document.getElementById('donut-legs').innerHTML=
-    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#4361ee;border-radius:1px;display:inline-block"></span>SI</span><span style="font-weight:600;color:#1a202c">${pct(siV)}%</span></div>`+
-    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#06b6d4;border-radius:1px;display:inline-block"></span>SE</span><span style="font-weight:600;color:#1a202c">${pct(seV)}%</span></div>`+
-    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#10b981;border-radius:1px;display:inline-block"></span>단품</span><span style="font-weight:600;color:#1a202c">${pct(pdV)}%</span></div>`;
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#f87171;border-radius:1px;display:inline-block"></span>매입</span><span style="font-weight:600;color:#1a202c">${buyR}%</span></div>`+
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#a78bfa;border-radius:1px;display:inline-block"></span>제경비</span><span style="font-weight:600;color:#1a202c">${expR}%</span></div>`+
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#10b981"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#10b981;border-radius:1px;display:inline-block"></span>영업이익</span><span style="font-weight:600">${profR}%</span></div>`;
 }
 
-// 미발행 팝업
 async function openNiPopup(){
-  const {data:rows=[]}=await sb.from('hkcloud_billings').select('*').in('status',['미발행','검수대기']).order('bill_date');
+  const ym=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  const {data:rows=[]}=await sb.from('hkcloud_billings').select('*').gte('bill_date',ym+'-01').lte('bill_date',ym+'-31').in('status',['미발행','검수대기']).order('bill_date');
   document.getElementById('ni-list').innerHTML=rows.length
-    ?'<table style="width:100%;font-size:12px;border-collapse:collapse">'+
-      '<thead><tr style="color:#94a3b8;border-bottom:1px solid #f1f5f9"><th style="padding:5px 8px;text-align:left">거래처</th><th>구분</th><th>예정일</th><th style="text-align:right">공급가</th><th>상태</th><th>액션</th></tr></thead><tbody>'+
-      rows.map(b=>`<tr style="border-bottom:1px solid #f8fafc"><td style="padding:7px 8px">${b.account_name||''}</td><td style="text-align:center"><span class="ttag ${b.source_type==='SI'?'tsi':b.source_type==='SE'?'tse':'tpr'}">${b.source_type}</span></td><td style="color:#94a3b8">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmtA(b.amount)}원</td><td>${bdg(b.status)}</td><td>${NXT[b.status]?`<button class="btn bg sm" onclick="chgSt(${b.id},'${NXT[b.status]}',()=>{openNiPopup();renderDash()})">→${NXT[b.status]}</button>`:'-'}</td></tr>`).join('')+
-      '</tbody></table>'
-    :'<div style="text-align:center;color:#94a3b8;padding:20px">미발행 건이 없습니다 ✅</div>';
+    ?'<div style="font-size:12px;color:#94a3b8;margin-bottom:10px">'+ym.replace('-','년 ')+'월 기준</div>'
+     +'<table style="width:100%;font-size:12px;border-collapse:collapse">'
+     +'<thead><tr style="color:#94a3b8;border-bottom:1px solid #f1f5f9"><th style="padding:5px 8px;text-align:left">거래처</th><th>구분</th><th>예정일</th><th style="text-align:right">공급가</th><th>상태</th><th>액션</th></tr></thead><tbody>'
+     +rows.map(b=>`<tr style="border-bottom:1px solid #f8fafc"><td style="padding:7px 8px">${b.account_name||''}</td><td style="text-align:center"><span class="ttag ${b.source_type==='SI'?'tsi':b.source_type==='SE'?'tse':'tpr'}">${b.source_type}</span></td><td style="color:#94a3b8">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmtA(b.amount)}원</td><td>${bdg(b.status)}</td><td>${NXT[b.status]?`<button class="btn bg sm" onclick="chgSt(${b.id},'${NXT[b.status]}',()=>{openNiPopup();renderDash()})">→${NXT[b.status]}</button>`:'-'}</td></tr>`).join('')
+     +'</tbody></table>'
+    :'<div style="text-align:center;color:#94a3b8;padding:20px">이번달 미발행 건이 없습니다 ✅</div>';
   document.getElementById('ni-popup').style.display='flex';
 }
 
