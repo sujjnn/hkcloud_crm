@@ -150,84 +150,75 @@ tbody tr:hover td{background:#f8faff}
 
 <!-- 대시보드 -->
 <div id="page-dash" class="page active">
-  <!-- 상단: 왼쪽(지표+구성비) + 오른쪽(필터 세로바) -->
-  <div style="display:grid;grid-template-columns:1fr 160px;gap:10px;margin-bottom:12px;align-items:start">
-    <!-- 왼쪽: 지표 + 구성비 나란히 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <!-- 지표 표 -->
-      <div class="card">
-        <div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #f1f5f9" id="k-period">연간 합계</div>
-        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:12px">
-          <span style="color:#94a3b8">총 매출</span><span style="font-weight:600;color:#4361ee" id="k-sale">-</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:12px">
-          <span style="color:#94a3b8">총 매입</span><span style="font-weight:600;color:#ef4444" id="k-buy">-</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:2px solid #e2e8f0;font-size:12px">
-          <span style="color:#94a3b8">총 제경비</span><span style="font-weight:600;color:#8b5cf6" id="k-exp">-</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px">
-          <span style="color:#374151;font-weight:600">총 손익</span><span style="font-weight:700" id="k-pnl">-</span>
-        </div>
+  <!-- 상단: 지표+구성비 / 막대차트 / 필터 3열 동일 높이 -->
+  <div style="display:grid;grid-template-columns:190px 1fr 150px;gap:10px;margin-bottom:10px">
+    <!-- 왼쪽: 지표 + 구성비 -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="padding:12px 14px">
+        <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #f1f5f9" id="k-period">연간 합계</div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f8fafc;font-size:12px"><span style="color:#94a3b8">총 매출</span><span style="font-weight:600;color:#4361ee" id="k-sale">-</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f8fafc;font-size:12px"><span style="color:#94a3b8">총 매입</span><span style="font-weight:600;color:#ef4444" id="k-buy">-</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:2px solid #e2e8f0;font-size:12px"><span style="color:#94a3b8">총 제경비</span><span style="font-weight:600;color:#8b5cf6" id="k-exp">-</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;font-weight:700"><span style="color:#374151">총 손익</span><span id="k-pnl">-</span></div>
       </div>
-      <!-- 구성비 도넛 -->
-      <div class="card">
-        <div class="ch" style="margin-bottom:8px"><div class="ct">🍩 구성비</div><div class="cht" id="donut-yr">연간</div></div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+      <div class="card" style="padding:12px 14px;flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:#374151">🍩 구성비</span><span style="font-size:10px;color:#94a3b8" id="donut-yr">연간</span></div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">
+          <div style="position:relative;width:80px;height:80px">
             <canvas id="donutC" width="80" height="80"></canvas>
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
               <div style="font-size:10px;font-weight:700;color:#1a202c;line-height:1" id="donut-total">-</div>
               <div style="font-size:8px;color:#94a3b8">만원</div>
             </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:5px;flex:1" id="donut-legs"></div>
         </div>
+        <div id="donut-legs" style="display:flex;flex-direction:column;gap:3px"></div>
       </div>
     </div>
-    <!-- 오른쪽: 필터 세로 바 -->
-    <div class="card" style="padding:10px 12px">
-      <div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #f1f5f9">필터</div>
-      <div style="display:flex;flex-direction:column;gap:7px">
-        <div class="fg"><span style="font-size:10px;color:#94a3b8">구분</span>
-          <select class="fsel" id="f-type" onchange="renderDash()" style="width:100%">
+    <!-- 가운데: 막대차트 -->
+    <div class="card" style="padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:#1a202c">📊 매출·매입·제경비 현황</span>
+        <span style="font-size:10px;color:#94a3b8">만원 · 월 클릭 시 구성비 업데이트</span>
+      </div>
+      <div style="height:160px"><canvas id="barC"></canvas></div>
+      <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#64748b"><span style="width:7px;height:7px;background:#4361ee;border-radius:1px;display:inline-block"></span>SI</span>
+        <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#64748b"><span style="width:7px;height:7px;background:#06b6d4;border-radius:1px;display:inline-block"></span>SE</span>
+        <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#64748b"><span style="width:7px;height:7px;background:#10b981;border-radius:1px;display:inline-block"></span>단품</span>
+        <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#64748b"><span style="width:7px;height:7px;background:#f87171;border-radius:1px;display:inline-block"></span>매입</span>
+        <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#64748b"><span style="width:7px;height:7px;background:#a78bfa;border-radius:1px;display:inline-block"></span>제경비</span>
+      </div>
+    </div>
+    <!-- 오른쪽: 필터 세로바 -->
+    <div class="card" style="padding:12px 14px">
+      <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #f1f5f9">필터</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:3px">구분</div>
+          <select class="fsel" id="f-type" onchange="renderDash()" style="width:100%;font-size:11px">
             <option value="">전체</option><option>SI</option><option>SE</option><option>단품</option>
-          </select>
-        </div>
-        <div class="fg"><span style="font-size:10px;color:#94a3b8">월</span>
-          <select class="fsel" id="f-month" onchange="renderDash()" style="width:100%">
+          </select></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:3px">월</div>
+          <select class="fsel" id="f-month" onchange="renderDash()" style="width:100%;font-size:11px">
             <option value="">전체</option>
             <option>1월</option><option>2월</option><option>3월</option><option>4월</option>
             <option>5월</option><option>6월</option><option>7월</option><option>8월</option>
             <option>9월</option><option>10월</option><option>11월</option><option>12월</option>
-          </select>
-        </div>
-        <div class="fg"><span style="font-size:10px;color:#94a3b8">프로젝트</span>
-          <select class="fsel" id="f-proj" onchange="renderDash()" style="width:100%"><option value="">전체</option></select>
-        </div>
-        <div class="fg"><span style="font-size:10px;color:#94a3b8">진행여부</span>
-          <select class="fsel" id="f-status" onchange="renderDash()" style="width:100%">
+          </select></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:3px">프로젝트</div>
+          <select class="fsel" id="f-proj" onchange="renderDash()" style="width:100%;font-size:11px"><option value="">전체</option></select></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:3px">진행여부</div>
+          <select class="fsel" id="f-status" onchange="renderDash()" style="width:100%;font-size:11px">
             <option value="">전체</option><option value="active">진행중</option><option value="done">완료</option>
-          </select>
-        </div>
-        <div class="fg"><span style="font-size:10px;color:#94a3b8">미발행</span>
-          <button class="btn sm" style="width:100%;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-size:11px;text-align:center" onclick="openNiPopup()"><span id="k-ni">-</span>건</button>
+          </select></div>
+        <div style="margin-top:4px;padding-top:8px;border-top:1px solid #f1f5f9">
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">미발행</div>
+          <button style="width:100%;padding:5px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit" onclick="openNiPopup()"><span id="k-ni">-</span>건</button>
         </div>
       </div>
     </div>
   </div>
-  <!-- 막대차트 -->
-  <div class="card" style="margin-bottom:12px;max-width:100%">
-    <div class="ch"><div class="ct">📊 매출·매입·제경비 현황</div><div class="cht">만원 · 월별 클릭 시 구성비 업데이트</div></div>
-    <div style="height:120px"><canvas id="barC"></canvas></div>
-    <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
-      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#4361ee;border-radius:2px;display:inline-block"></span>매출(SI)</span>
-      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#06b6d4;border-radius:2px;display:inline-block"></span>매출(SE)</span>
-      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#10b981;border-radius:2px;display:inline-block"></span>매출(단품)</span>
-      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#f87171;border-radius:2px;display:inline-block"></span>매입</span>
-      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#a78bfa;border-radius:2px;display:inline-block"></span>제경비</span>
-    </div>
-  </div>
+
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <div class="card">
       <div class="ch"><div class="ct">🔴 이번달 세금계산서</div></div>
