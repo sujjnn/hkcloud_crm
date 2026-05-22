@@ -6,6 +6,7 @@
 <title>HK CLOUD</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#f0f2f8;font-size:14px;color:#1a202c}
@@ -125,6 +126,7 @@ tbody tr:hover td{background:#f8faff}
       <div class="sn" onclick="go('exp',this)">제경비 등록</div>
       <div class="sdiv"></div>
       <div class="sl mg">관리</div>
+      <div class="sn" onclick="go('upload',this)">📤 엑셀 업로드</div>
       <div class="sn" onclick="go('tax',this)">세금계산서</div>
       <div class="sn" onclick="go('acc',this)">거래처</div>
     </div>
@@ -381,18 +383,75 @@ tbody tr:hover td{background:#f8faff}
 <!-- 제경비 -->
 <div id="page-exp" class="page">
   <div class="fc">
-    <div class="st">제경비 등록</div>
-    <div class="fr fr3">
-      <div class="fg"><label class="fl">분류</label><select class="fi" id="excat"><option>급여</option><option>경비</option><option>기타</option></select></div>
-      <div class="fg"><label class="fl">발생일</label><input class="fi" id="exdt" type="date"></div>
-      <div class="fg"><label class="fl">금액 (원)</label><input class="fi" id="exam" type="text" placeholder="0" oninput="fmtI(this)"></div>
+    <div class="st">📂 더존 엑셀 업로드</div>
+    <div style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:16px;text-align:center;margin-bottom:10px">
+      <div style="font-size:13px;color:#64748b;margin-bottom:8px">더존에서 내려받은 엑셀 파일을 선택하세요</div>
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:12px">AY열(잡코드) 기준으로 SI매입/SE매입/단품매입/제경비 자동 분류</div>
+      <input type="file" id="exp-file" accept=".xlsx,.xls" style="display:none" onchange="previewExp(this)">
+      <button class="btn bp" onclick="document.getElementById('exp-file').click()">파일 선택</button>
     </div>
-    <div class="fr">
-      <div class="fg"><label class="fl">내용</label><input class="fi" id="exno" placeholder="항목 설명"></div>
-      <div class="fg" style="justify-content:flex-end;padding-top:18px"><button class="btn bp" onclick="addExp()">등록</button></div>
+    <div id="exp-preview" style="display:none">
+      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px" id="exp-preview-title"></div>
+      <div style="overflow-x:auto;max-height:260px;border:1px solid #e2e8f0;border-radius:8px">
+        <table id="exp-preview-tbl" style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead id="exp-preview-head"></thead>
+          <tbody id="exp-preview-body"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <div style="font-size:12px;color:#94a3b8" id="exp-preview-count"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bg sm" onclick="document.getElementById('exp-preview').style.display='none'">취소</button>
+          <button class="btn bp" onclick="saveExp()">저장</button>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="card"><table><thead><tr><th>발생일</th><th>분류</th><th>내용</th><th style="text-align:right">금액</th></tr></thead><tbody id="tb-exp"></tbody></table></div>
+  <div class="card">
+    <div class="ch"><div class="ct">제경비 내역</div>
+      <select class="fsel" id="exp-fmon" onchange="renderExp()">
+        <option value="">전체월</option>
+      </select>
+    </div>
+    <table><thead><tr><th>날짜</th><th>계정명</th><th>거래처</th><th>잡코드</th><th style="text-align:right">금액</th></tr></thead><tbody id="tb-exp"></tbody></table>
+  </div>
+</div>
+
+<!-- 엑셀 업로드/다운로드 -->
+<div id="page-upload" class="page">
+  <!-- 다운로드 -->
+  <div class="fc">
+    <div class="st">📥 양식 다운로드</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:8px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1a202c">HK_CLOUD_업로드양식.xlsx</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px">SI청구 · SE청구 · 단품매출 · SI매입 · SE매입 · 단품매입 (6개 시트)</div>
+      </div>
+      <button class="btn bp" onclick="downloadTemplate()">📥 양식 다운로드</button>
+    </div>
+  </div>
+  <!-- 업로드 -->
+  <div class="fc">
+    <div class="st">📤 엑셀 업로드</div>
+    <div style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:10px;padding:24px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="document.getElementById('ul-file').click()" id="ul-dropzone">
+      <div style="font-size:28px;margin-bottom:8px">📂</div>
+      <div style="font-size:14px;font-weight:600;color:#374151">클릭하여 파일 선택</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:4px">HK_CLOUD_업로드양식.xlsx 형식</div>
+      <input type="file" id="ul-file" accept=".xlsx,.xls" style="display:none" onchange="parseUpload(this)">
+    </div>
+    <!-- 시트별 미리보기 탭 -->
+    <div id="ul-preview" style="display:none">
+      <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap" id="ul-tabs"></div>
+      <div id="ul-table-wrap" style="overflow-x:auto;max-height:280px;border:1px solid #e2e8f0;border-radius:8px"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <div style="font-size:12px;color:#94a3b8" id="ul-summary"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bg sm" onclick="resetUpload()">취소</button>
+          <button class="btn bp" id="ul-save-btn" onclick="saveUpload()">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 세금계산서 -->
@@ -492,8 +551,8 @@ async function doLogout(){
 document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 
 // 페이지 전환
-const TITLES={'dash':'대시보드','si-proj':'SI 프로젝트 등록','si-bill':'SI 청구·매출','si-buy':'SI 매입','se-cont':'SE 계약 관리','se-bill':'SE 청구·매출','se-buy':'SE 매입','pd-sale':'단품 매출','pd-buy':'단품 매입','exp':'제경비','tax':'세금계산서','acc':'거래처'};
-const RENDERS={'dash':renderDash,'si-proj':renderSIProj,'si-bill':()=>renderSIBill(),'si-buy':renderSIBuyList,'se-cont':renderSECont,'se-bill':()=>renderSEBill(),'se-buy':renderSEBuyList,'pd-sale':renderPdSale,'pd-buy':renderPdBuy,'exp':renderExp,'tax':renderTax,'acc':renderAcc};
+const TITLES={'dash':'대시보드','si-proj':'SI 프로젝트 등록','si-bill':'SI 청구·매출','si-buy':'SI 매입','se-cont':'SE 계약 관리','se-bill':'SE 청구·매출','se-buy':'SE 매입','pd-sale':'단품 매출','pd-buy':'단품 매입','exp':'제경비','upload':'엑셀 업로드 · 다운로드','tax':'세금계산서','acc':'거래처'};
+const RENDERS={'dash':renderDash,'si-proj':renderSIProj,'si-bill':()=>renderSIBill(),'si-buy':renderSIBuyList,'se-cont':renderSECont,'se-bill':()=>renderSEBill(),'se-buy':renderSEBuyList,'pd-sale':renderPdSale,'pd-buy':renderPdBuy,'exp':renderExp,'upload':()=>{},'tax':renderTax,'acc':renderAcc};
 function go(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
@@ -764,15 +823,288 @@ async function addSEBuy(){
   document.getElementById('sebv').value='';document.getElementById('sebam').value='';renderSEBuyList();
 }
 
-// 제경비
-async function renderExp(){
-  const {data:rows=[]}=await sb.from('hkcloud_expenses').select('*').order('expense_date',{ascending:false});
-  document.getElementById('tb-exp').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:12px">${r.expense_date||''}</td><td><span class="bdg bgy">${r.category||''}</span></td><td style="font-size:12px;color:#64748b">${r.note||'-'}</td><td style="text-align:right;font-weight:600">${fmtA(r.amount)}원</td></tr>`).join('')||noD(4);
+// ── 엑셀 업로드/다운로드 ──────────────────────────────────
+let ulParsed = {};
+const UL_SHEETS = ['SI청구','SE청구','단품매출','SI매입','SE매입','단품매입'];
+const UL_COLS = {
+  'SI청구':   ['job_code','account_name','source_name','bill_type','issue_type','bill_date','amount','vat','status'],
+  'SE청구':   ['job_code','account_name','source_name','bill_type','issue_type','bill_date','amount','vat','status'],
+  '단품매출': ['job_code','account_name','name','bill_type','qty','price','sale_date'],
+  'SI매입':   ['job_code','vendor','proj_name','category','issue_date','amount','vat'],
+  'SE매입':   ['job_code','vendor','cont_name','issue_date','amount'],
+  '단품매입': ['job_code','vendor','name','bill_type','issue_date','amount','vat'],
+};
+
+function downloadTemplate(){
+  const wb=XLSX.utils.book_new();
+  const GUBUN=['선금','중도금','중도금1차','중도금2차','중도금3차','잔금','안정화','기타'];
+  const ITYPE=['홈택스','나라빌','역발행','검수후발행'];
+  const STAT=['미발행','발행완료'];
+
+  const sheets=[
+    {name:'SI청구',  guide:'※ 같은 프로젝트의 선금/중도금/잔금은 동일 Job Code로 여러 행 입력.',
+     hdr:['Job Code','거래처명','프로젝트명','구분','발행방식','예정일(YYYY-MM-DD)','공급가(원)','VAT(원)','상태'],
+     sample:[['CPAAA01','(주)거래처','프로젝트명','선금','홈택스','2026-03-25',10000000,1000000,'입금완료'],
+             ['CPAAA01','(주)거래처','프로젝트명','중도금','홈택스','2026-06-25',15000000,1500000,'발행완료'],
+             ['CPAAA01','(주)거래처','프로젝트명','잔금','홈택스','2026-09-25',25000000,2500000,'미발행']]},
+    {name:'SE청구',  guide:'※ SE 정기 청구. Job Code는 CS로 시작.',
+     hdr:['Job Code','거래처명','계약명','청구유형','발행방식','예정일(YYYY-MM-DD)','공급가(원)','VAT(원)','상태'],sample:[]},
+    {name:'단품매출',guide:'※ 단품 매출. Job Code는 CX로 시작. 분할청구 시 동일 Job Code로 여러 행.',
+     hdr:['Job Code','거래처명','상품명','구분','수량','단가(원)','매출일(YYYY-MM-DD)'],sample:[]},
+    {name:'SI매입',  guide:'※ SI 프로젝트 매입. Job Code는 CP로 시작.',
+     hdr:['Job Code','매입처','프로젝트명','분류','발행일(YYYY-MM-DD)','공급가(원)','VAT(원)'],sample:[]},
+    {name:'SE매입',  guide:'※ SE 계약 관련 매입. Job Code는 CS로 시작.',
+     hdr:['Job Code','매입처','계약명','발행일(YYYY-MM-DD)','공급가(원)'],sample:[]},
+    {name:'단품매입',guide:'※ 단품 관련 매입. Job Code는 CX로 시작. 분할 시 동일 Job Code로 여러 행.',
+     hdr:['Job Code','매입처','상품명','구분','발행일(YYYY-MM-DD)','공급가(원)','VAT(원)'],sample:[]},
+  ];
+
+  sheets.forEach(({name,guide,hdr,sample})=>{
+    const rows=[[guide],hdr,...sample];
+    for(let i=0;i<20;i++)rows.push(hdr.map(()=>''));
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    // 컬럼 너비
+    ws['!cols']=hdr.map(h=>({wch:Math.max(h.length+4,14)}));
+    XLSX.utils.book_append_sheet(wb,ws,name);
+  });
+
+  XLSX.writeFile(wb,'HK_CLOUD_업로드양식.xlsx');
 }
-async function addExp(){
-  const am=parseA(document.getElementById('exam').value);if(!am){alert('금액 입력');return;}
-  await sb.from('hkcloud_expenses').insert({category:document.getElementById('excat').value,expense_date:document.getElementById('exdt').value||tod,amount:am,note:document.getElementById('exno').value||''});
-  document.getElementById('exam').value='';document.getElementById('exno').value='';renderExp();
+
+function parseUpload(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+    ulParsed={};
+    let totalRows=0;
+    UL_SHEETS.forEach(sname=>{
+      const ws=wb.Sheets[sname];
+      if(!ws){ulParsed[sname]=[];return;}
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+      // 3행부터 데이터 (1행=안내, 2행=헤더)
+      const data=rows.slice(2).filter(r=>r&&r.some(c=>c!==''&&c!==undefined));
+      ulParsed[sname]=data;
+      totalRows+=data.length;
+    });
+    document.getElementById('ul-summary').textContent=`총 ${totalRows}건 파싱됨`;
+    renderUlTabs('SI청구');
+    document.getElementById('ul-preview').style.display='block';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderUlTabs(active){
+  const tabWrap=document.getElementById('ul-tabs');
+  tabWrap.innerHTML=UL_SHEETS.map(s=>{
+    const cnt=ulParsed[s]?.length||0;
+    const isActive=s===active;
+    return `<button onclick="renderUlTabs('${s}')" style="padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid ${isActive?'#4361ee':'#e2e8f0'};background:${isActive?'#4361ee':'#fff'};color:${isActive?'#fff':'#64748b'}">${s} <span style="opacity:.8">(${cnt})</span></button>`;
+  }).join('');
+
+  const rows=ulParsed[active]||[];
+  const hdrs={'SI청구':['Job Code','거래처','프로젝트명','구분','발행방식','예정일','공급가','VAT','상태'],
+    'SE청구':['Job Code','거래처','계약명','청구유형','발행방식','예정일','공급가','VAT','상태'],
+    '단품매출':['Job Code','거래처','상품명','구분','수량','단가','매출일'],
+    'SI매입':['Job Code','매입처','프로젝트명','분류','발행일','공급가','VAT'],
+    'SE매입':['Job Code','매입처','계약명','발행일','공급가'],
+    '단품매입':['Job Code','매입처','상품명','구분','발행일','공급가','VAT']};
+  const h=hdrs[active]||[];
+  const tbl=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="background:#f8fafc">${h.map(c=>`<th style="padding:6px 10px;text-align:left;color:#94a3b8;white-space:nowrap;border-bottom:1px solid #f1f5f9">${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows.length?rows.slice(0,30).map(r=>`<tr style="border-bottom:1px solid #f8fafc">${h.map((_,i)=>`<td style="padding:6px 10px;white-space:nowrap">${r[i]||''}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${h.length}" style="text-align:center;color:#94a3b8;padding:20px">데이터 없음</td></tr>`}</tbody>
+  </table>${rows.length>30?`<div style="text-align:center;font-size:12px;color:#94a3b8;padding:8px">... 외 ${rows.length-30}건</div>`:''}`;
+  document.getElementById('ul-table-wrap').innerHTML=tbl;
+  document.getElementById('ul-summary').textContent=`${active}: ${rows.length}건 / 전체 ${UL_SHEETS.reduce((s,k)=>s+(ulParsed[k]?.length||0),0)}건`;
+}
+
+async function saveUpload(){
+  const btn=document.getElementById('ul-save-btn');
+  btn.disabled=true;btn.textContent='저장 중...';
+  try{
+    const results={};
+    // SI청구
+    const siBills=(ulParsed['SI청구']||[]).filter(r=>r[0]&&r[5]&&r[6]).map(r=>({
+      source_type:'SI',source_id:null,account_id:null,
+      account_name:r[1]||'',source_name:r[2]||'',
+      bill_type:r[3]||'',issue_type:r[4]||'홈택스',
+      bill_date:String(r[5]).slice(0,10),
+      amount:parseFloat(String(r[6]||0).replace(/,/g,''))||0,
+      vat:parseFloat(String(r[7]||0).replace(/,/g,''))||0,
+      status:r[8]||'미발행',inv_no:'',job_code:r[0]
+    }));
+    // SE청구
+    const seBills=(ulParsed['SE청구']||[]).filter(r=>r[0]&&r[5]&&r[6]).map(r=>({
+      source_type:'SE',source_id:null,account_id:null,
+      account_name:r[1]||'',source_name:r[2]||'',
+      bill_type:r[3]||'정기',issue_type:r[4]||'홈택스',
+      bill_date:String(r[5]).slice(0,10),
+      amount:parseFloat(String(r[6]||0).replace(/,/g,''))||0,
+      vat:parseFloat(String(r[7]||0).replace(/,/g,''))||0,
+      status:r[8]||'미발행',inv_no:'',job_code:r[0]
+    }));
+    // 단품매출
+    const pdSales=(ulParsed['단품매출']||[]).filter(r=>r[0]&&r[2]&&r[6]).map(r=>({
+      code:r[0],account_id:null,account_name:r[1]||'',
+      name:r[2]||'',bill_type:r[3]||'',
+      qty:parseInt(r[4])||1,
+      price:parseFloat(String(r[5]||0).replace(/,/g,''))||0,
+      sale_date:String(r[6]).slice(0,10)
+    }));
+    // SI매입
+    const siBuy=(ulParsed['SI매입']||[]).filter(r=>r[1]&&r[5]).map(r=>({
+      vendor:r[1]||'',proj_id:null,proj_name:r[2]||'',
+      category:r[3]||'용역',
+      issue_date:String(r[4]).slice(0,10),
+      amount:parseFloat(String(r[5]||0).replace(/,/g,''))||0,
+      vat:parseFloat(String(r[6]||0).replace(/,/g,''))||0,
+      job_code:r[0]
+    }));
+    // SE매입
+    const seBuy=(ulParsed['SE매입']||[]).filter(r=>r[1]&&r[4]).map(r=>({
+      vendor:r[1]||'',cont_id:null,cont_name:r[2]||'',
+      issue_date:String(r[3]).slice(0,10),
+      amount:parseFloat(String(r[4]||0).replace(/,/g,''))||0,
+      job_code:r[0]
+    }));
+    // 단품매입
+    const pdBuy=(ulParsed['단품매입']||[]).filter(r=>r[1]&&r[5]).map(r=>({
+      vendor:r[1]||'',name:r[2]||'',bill_type:r[3]||'',
+      issue_date:String(r[4]).slice(0,10),
+      amount:parseFloat(String(r[5]||0).replace(/,/g,''))||0,
+      vat:parseFloat(String(r[6]||0).replace(/,/g,''))||0,
+      job_code:r[0]
+    }));
+
+    const ops=[];
+    if(siBills.length)ops.push(sb.from('hkcloud_billings').insert(siBills).then(r=>({key:'SI청구',r})));
+    if(seBills.length)ops.push(sb.from('hkcloud_billings').insert(seBills).then(r=>({key:'SE청구',r})));
+    if(pdSales.length)ops.push(sb.from('hkcloud_prod_sales').insert(pdSales).then(r=>({key:'단품매출',r})));
+    if(siBuy.length)ops.push(sb.from('hkcloud_si_purchases').insert(siBuy).then(r=>({key:'SI매입',r})));
+    if(seBuy.length)ops.push(sb.from('hkcloud_se_purchases').insert(seBuy).then(r=>({key:'SE매입',r})));
+    if(pdBuy.length)ops.push(sb.from('hkcloud_prod_purchases').insert(pdBuy).then(r=>({key:'단품매입',r})));
+
+    const res=await Promise.all(ops);
+    const errs=res.filter(x=>x.r.error);
+    if(errs.length){
+      alert('오류 발생:\n'+errs.map(x=>`${x.key}: ${x.r.error.message}`).join('\n'));
+    } else {
+      const summary=[
+        siBills.length&&`SI청구 ${siBills.length}건`,
+        seBills.length&&`SE청구 ${seBills.length}건`,
+        pdSales.length&&`단품매출 ${pdSales.length}건`,
+        siBuy.length&&`SI매입 ${siBuy.length}건`,
+        seBuy.length&&`SE매입 ${seBuy.length}건`,
+        pdBuy.length&&`단품매입 ${pdBuy.length}건`,
+      ].filter(Boolean).join(' · ');
+      alert(`✅ 저장 완료!\n${summary}`);
+      resetUpload();
+    }
+  }catch(e){alert('오류: '+e.message);}
+  btn.disabled=false;btn.textContent='저장';
+}
+
+function resetUpload(){
+  ulParsed={};
+  document.getElementById('ul-preview').style.display='none';
+  document.getElementById('ul-file').value='';
+}
+
+// 단품매출 단품매입 테이블에 job_code 컬럼 추가 (hkcloud_prod_sales/purchases에 없으면 무시됨)
+
+let expParsed=[];
+
+async function renderExp(){
+  const sel=document.getElementById('exp-fmon');
+  if(sel&&sel.options.length<=1)for(let m=1;m<=12;m++)sel.add(new Option(m+'월',String(m).padStart(2,'0')));
+  const mon=sel?.value||'';
+  const yr=today.getFullYear();
+  let q=sb.from('hkcloud_expenses').select('*').gte('expense_date',yr+'-01-01').lte('expense_date',yr+'-12-31').order('expense_date',{ascending:false});
+  if(mon)q=q.gte('expense_date',`${yr}-${mon}-01`).lte('expense_date',`${yr}-${mon}-31`);
+  const {data:rows=[]}=await q;
+  document.getElementById('tb-exp').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:12px">${r.expense_date||''}</td><td style="font-size:12px">${r.note||''}</td><td style="font-size:12px;color:#64748b">${r.vendor||'-'}</td><td style="font-size:11px;color:#8b5cf6">${r.job_code||''}</td><td style="text-align:right;font-weight:600">${fmtA(r.amount)}원</td></tr>`).join('')||noD(5);
+}
+
+function previewExp(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+    if(rows.length<2){alert('데이터가 없습니다');return;}
+
+    // 헤더 행 찾기 (계정코드 있는 행)
+    let hdrIdx=0;
+    for(let i=0;i<Math.min(5,rows.length);i++){if(rows[i].some(c=>String(c||'').includes('계정')||String(c||'').includes('날짜'))){hdrIdx=i;break;}}
+    const hdr=rows[hdrIdx];
+
+    // 컬럼 인덱스 찾기
+    const ci=(name)=>hdr.findIndex(h=>String(h||'').includes(name));
+    const iDate=2; // C열(0-indexed)
+    const iAccNm=1; // B열
+    const iVendor=6; // G열
+    const iDebit=8; // I열 (차변)
+    const iJobCode=50; // AY열 (0-indexed: A=0, AY=50)
+
+    expParsed=[];
+    for(let i=hdrIdx+1;i<rows.length;i++){
+      const row=rows[i];
+      if(!row||row.every(c=>!c))continue;
+      const accNm=String(row[iAccNm]||'');
+      if(accNm.includes('매출')||accNm.includes('외주'))continue;
+      const amt=parseFloat(String(row[iDebit]||'0').replace(/,/g,''))||0;
+      if(!amt||amt<=0)continue;
+      const jobCode=String(row[iJobCode]||'').trim();
+      if(!jobCode)continue;
+      const rawDate=String(row[iDate]||'');
+      const dateStr=rawDate.slice(0,10).replace(/\//g,'-');
+      // 분류
+      let category='제경비';
+      if(jobCode.startsWith('CP'))category='SI매입';
+      else if(jobCode.startsWith('CS'))category='SE매입';
+      else if(jobCode.startsWith('CX'))category='단품매입';
+      expParsed.push({date:dateStr,accNm,vendor:String(row[iVendor]||''),jobCode,amt,category});
+    }
+
+    // 미리보기
+    const bycat={};expParsed.forEach(r=>{bycat[r.category]=(bycat[r.category]||0)+1;});
+    const catSummary=Object.entries(bycat).map(([k,v])=>`${k} ${v}건`).join(' · ');
+    document.getElementById('exp-preview-title').textContent=`📋 파싱 결과: 총 ${expParsed.length}건 (${catSummary})`;
+    document.getElementById('exp-preview-head').innerHTML='<tr style="background:#f8fafc">'+['날짜','계정명','거래처','잡코드','분류','금액'].map(h=>`<th style="padding:5px 8px;font-size:11px;color:#94a3b8;text-align:left;white-space:nowrap">${h}</th>`).join('')+'</tr>';
+    document.getElementById('exp-preview-body').innerHTML=expParsed.slice(0,20).map(r=>{
+      const cc=r.category==='제경비'?'#8b5cf6':r.category==='SI매입'?'#4361ee':r.category==='SE매입'?'#06b6d4':'#10b981';
+      return`<tr style="border-bottom:1px solid #f8fafc"><td style="padding:5px 8px;color:#94a3b8">${r.date}</td><td style="padding:5px 8px">${r.accNm}</td><td style="padding:5px 8px;color:#64748b">${r.vendor}</td><td style="padding:5px 8px;font-size:11px;color:#8b5cf6">${r.jobCode}</td><td style="padding:5px 8px"><span style="background:${cc}22;color:${cc};padding:1px 6px;border-radius:6px;font-size:11px;font-weight:600">${r.category}</span></td><td style="padding:5px 8px;text-align:right;font-weight:600">${fmtA(r.amt)}원</td></tr>`;
+    }).join('');
+    if(expParsed.length>20)document.getElementById('exp-preview-body').innerHTML+=`<tr><td colspan="6" style="text-align:center;padding:8px;color:#94a3b8;font-size:12px">... 외 ${expParsed.length-20}건</td></tr>`;
+    document.getElementById('exp-preview-count').textContent=`상위 20건 미리보기`;
+    document.getElementById('exp-preview').style.display='block';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function saveExp(){
+  if(!expParsed.length){alert('파싱된 데이터가 없습니다');return;}
+  const expRows=expParsed.filter(r=>r.category==='제경비').map(r=>({expense_date:r.date,note:r.accNm,vendor:r.vendor,job_code:r.jobCode,amount:r.amt,category:'제경비'}));
+  const siRows=expParsed.filter(r=>r.category==='SI매입').map(r=>({vendor:r.vendor||r.accNm,proj_id:null,proj_name:'',issue_date:r.date,amount:r.amt,vat:0,category:'외주',note:r.accNm}));
+  const seRows=expParsed.filter(r=>r.category==='SE매입').map(r=>({vendor:r.vendor||r.accNm,cont_id:null,cont_name:'',issue_date:r.date,amount:r.amt,note:r.accNm}));
+  const pdRows=expParsed.filter(r=>r.category==='단품매입').map(r=>({vendor:r.vendor||r.accNm,issue_date:r.date,amount:r.amt,note:r.accNm}));
+
+  const ops=[];
+  if(expRows.length)ops.push(sb.from('hkcloud_expenses').insert(expRows));
+  if(siRows.length)ops.push(sb.from('hkcloud_si_purchases').insert(siRows));
+  if(seRows.length)ops.push(sb.from('hkcloud_se_purchases').insert(seRows));
+  if(pdRows.length)ops.push(sb.from('hkcloud_prod_purchases').insert(pdRows));
+
+  const results=await Promise.all(ops);
+  const errs=results.filter(r=>r.error);
+  if(errs.length){alert('일부 오류: '+errs.map(r=>r.error.message).join(', '));return;}
+
+  alert(`✅ 저장 완료!\n제경비 ${expRows.length}건 · SI매입 ${siRows.length}건 · SE매입 ${seRows.length}건 · 단품매입 ${pdRows.length}건`);
+  document.getElementById('exp-preview').style.display='none';
+  document.getElementById('exp-file').value='';
+  expParsed=[];
+  renderExp();
 }
 
 // 단품 매출
