@@ -8,1741 +8,866 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;background:#f0f2f8;font-size:14px;color:#1a202c}
-
-
-/* ── 슬라이드 패널 ── */
-#detail-panel{position:fixed;top:0;right:-480px;width:480px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.15);z-index:200;transition:right .25s ease;display:flex;flex-direction:column;overflow:hidden}
-#detail-panel.open{right:0}
-#panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:199}
-#panel-overlay.open{display:block}
-.panel-hd{padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.panel-title{font-size:14px;font-weight:700;color:#1a202c}
-.panel-close{cursor:pointer;color:#94a3b8;font-size:20px;line-height:1;background:none;border:none;font-family:inherit}
-.panel-close:hover{color:#1a202c}
-.panel-body{flex:1;overflow-y:auto;padding:16px 20px}
-.panel-section{margin-bottom:16px}
-.panel-section-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #f1f5f9}
-.panel-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:12px}
-.panel-row:last-child{border:none}
-.panel-lbl{color:#94a3b8}
-.panel-val{font-weight:500;color:#1a202c;text-align:right}
-
-/* ── 로그인 ── */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1f2e 0%,#2d3548 100%)}
-.login-box{background:#fff;border-radius:16px;padding:40px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.login-logo{font-size:24px;font-weight:700;color:#1a202c;margin-bottom:4px}
-.login-logo span{color:#4361ee}
-.login-sub{font-size:12px;color:#94a3b8;margin-bottom:28px}
-.login-label{font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px}
-.login-input{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;margin-bottom:14px;transition:border .15s}
-.login-input:focus{border-color:#4361ee}
-.login-btn{width:100%;padding:11px;background:#4361ee;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s}
-.login-btn:hover{background:#3451d1}
-.login-btn:disabled{background:#94a3b8;cursor:not-allowed}
-.login-err{color:#ef4444;font-size:12px;margin-top:8px;text-align:center}
-.login-forgot{text-align:center;margin-top:12px;font-size:12px;color:#94a3b8}
-.login-forgot a{color:#4361ee;cursor:pointer;text-decoration:none}
-
-/* ── 앱 레이아웃 ── */
+body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#f0f2f8;font-size:14px;color:#1a202c}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1f2e,#2d3548)}
+.lb{background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.ll{font-size:24px;font-weight:700;margin-bottom:6px}.ll span{color:#4361ee}
+.ls{font-size:13px;color:#94a3b8;margin-bottom:24px}
+.li{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px}
+.li:focus{border-color:#4361ee}
+.lb-btn{width:100%;padding:11px;background:#4361ee;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}
+.lb-btn:disabled{background:#94a3b8}
+.le{color:#ef4444;font-size:12px;margin-top:6px;text-align:center;min-height:16px}
 #app{display:none;height:100vh;overflow:hidden;flex-direction:column}
 #app.show{display:flex}
-#header{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.header-logo{font-size:15px;font-weight:700;color:#1a202c}
-.header-logo span{color:#4361ee}
-.header-right{display:flex;align-items:center;gap:12px}
-.header-user{font-size:12px;color:#64748b}
-.header-role{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
-.role-admin{background:#ede9fe;color:#6d28d9}
-.role-manager{background:#dbeafe;color:#1d4ed8}
-.role-sales{background:#d1fae5;color:#065f46}
-.role-viewer{background:#f1f5f9;color:#64748b}
-.header-logout{font-size:11px;color:#94a3b8;cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;font-family:inherit}
-.header-logout:hover{background:#f8fafc}
-
-#body{display:flex;flex:1;overflow:hidden}
-#sidebar{width:200px;background:#1a1f2e;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
-.nav-sec{padding:8px 0 2px}
-.nav-lbl{padding:4px 14px 5px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
-.nav-lbl.lbl-si{color:#a5b4fc;border-left:3px solid #818cf8;padding-left:11px;background:rgba(129,140,248,.08)}
-.nav-lbl.lbl-se{color:#67e8f9;border-left:3px solid #22d3ee;padding-left:11px;background:rgba(34,211,238,.08)}
-.nav-lbl.lbl-prod{color:#6ee7b7;border-left:3px solid #34d399;padding-left:11px;background:rgba(52,211,153,.08)}
-.nav-lbl.lbl-mgmt{color:#fcd34d;border-left:3px solid #fbbf24;padding-left:11px;background:rgba(251,191,36,.08)}
-.kpi-big{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px}
-.kpi-big.ab{border-top:3px solid #4361ee}
-.kpi-big.ar{border-top:3px solid #ef4444}
-.kpi-big.aa{border-top:3px solid #f59e0b}
-.kpi-big.ag{border-top:3px solid #10b981}
-.kpi-big-lbl{font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:6px}
-.kpi-big-val{font-size:22px;font-weight:700;color:#1a202c;line-height:1;margin-bottom:8px}
-.kpi-big-sub{font-size:11px;color:#94a3b8;margin-top:4px}
-.kpi-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
-.kpi-tab{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;transition:all .12s;font-family:inherit}
-.kpi-tab:hover{background:#e2e8f0}
-.kpi-tab.on{color:#fff;border-color:transparent}
-.kpi-row-new{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
-.nav-item{padding:7px 14px;font-size:12px;color:#94a3b8;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .12s}
-.nav-item:hover{background:#252b3b;color:#e2e8f0}
-.nav-item.active{background:rgba(67,97,238,.2);color:#c7d2fe;border-left:2px solid #4361ee}
-.nav-sub{padding:7px 14px 7px 28px;font-size:12px;color:#7a8fa8;cursor:pointer;transition:all .1s;border-left:2px solid transparent}
-.nav-sub:hover{background:#252b3b;color:#cbd5e1}
-.nav-sub.active{color:#e2e8f0;font-weight:600;background:#252b3b}
-.nav-div{height:1px;background:#2d3548;margin:5px 0}
-.nav-locked{opacity:.4;pointer-events:none}
-
-#main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
-#topbar{background:#fff;padding:9px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:12px;min-height:46px}
-.page-title{font-size:14px;font-weight:700;color:#1a202c}
-.topbar-r{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.fsel{padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;background:#fff;outline:none;cursor:pointer;color:#374151}
-.fsel:focus{border-color:#4361ee}
-#content{padding:14px 20px;display:flex;flex-direction:column;gap:12px}
-
-/* ── KPI ── */
-.kpi-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-.kpi{background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:10px 12px;border-top:2px solid #e2e8f0;cursor:pointer;transition:box-shadow .15s}
-.kpi:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.kpi.ab{border-top-color:#4361ee}.kpi.ag{border-top-color:#10b981}.kpi.am{border-top-color:#06b6d4}
-.kpi.ap{border-top-color:#8b5cf6}.kpi.ar{border-top-color:#ef4444}.kpi.aa{border-top-color:#f59e0b}.kpi.ax{border-top-color:#ec4899}
-.kpi-lbl{font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi-val{font-size:18px;font-weight:700;color:#1a202c;line-height:1}
-.kpi-delta{font-size:10px;margin-top:3px}
-.din{color:#4361ee}.dmu{color:#94a3b8}.dwa{color:#f59e0b}
-
-/* ── 배너 ── */
-.alert-banner{border-radius:9px;padding:10px 14px;display:flex;align-items:flex-start;gap:10px;font-size:12px}
-.ab-red{background:#fff0f0;border:1px solid #fecaca;color:#991b1b}
-.ab-yellow{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-.banner-item{font-size:11px;padding:2px 0;border-bottom:1px solid rgba(0,0,0,.05)}
-.banner-item:last-child{border:none}
-
-/* ── 차트 ── */
-.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.dash-bot{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px}
-.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.card-title{font-size:13px;font-weight:700;color:#1a202c}
-.card-hint{font-size:10px;color:#94a3b8}
-.chart-box{height:120px;position:relative}
-.leg-row{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap}
-.leg{display:flex;align-items:center;gap:3px;font-size:10px;color:#64748b}
-.leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
-
-/* ── 도넛 ── */
-.donut3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
-.d3-item{display:flex;flex-direction:column;align-items:center;gap:3px}
-.d3-canvas{position:relative;width:66px;height:66px}
-.d3-canvas canvas{width:66px!important;height:66px!important}
-.d3-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
-.d3-val{font-size:10px;font-weight:700;color:#1a202c;line-height:1}
-.d3-sub{font-size:8px;color:#94a3b8;margin-top:1px}
-.d3-label{font-size:10px;font-weight:700;text-align:center}
-.d3-legs{width:100%;display:flex;flex-direction:column;gap:1px;margin-top:2px}
-.d3l{display:flex;justify-content:space-between;font-size:9px;padding:1px 0;color:#64748b}
-.d3l-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0;margin-top:2px}
-.d3l-val{font-weight:600;color:#1a202c}
-
-/* ── 칸반 ── */
-.kanban-wrap{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;overflow-x:auto;padding-bottom:4px}
-.kanban-col{background:#f8fafc;border-radius:10px;padding:10px;min-width:150px;min-height:200px;transition:all .15s}
-.kanban-col-title{font-size:11px;font-weight:700;color:#374151;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.kanban-badge{background:#e2e8f0;border-radius:10px;padding:1px 6px;font-size:9px;color:#64748b}
-.kanban-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:9px 10px;margin-bottom:7px;cursor:grab;transition:box-shadow .15s;font-size:11px}
-.kanban-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.1)}
-.kanban-card.dragging{opacity:.5}
-.kanban-col.drag-over{background:#eff6ff;border:2px dashed #4361ee}
-.kc-acc{font-size:10px;color:#94a3b8;margin-bottom:3px}
-.kc-name{font-weight:600;color:#1a202c;margin-bottom:4px;line-height:1.3}
-.kc-amt{font-size:10px;color:#4361ee;font-weight:600}
-.kc-date{font-size:9px;color:#94a3b8;margin-top:3px}
-.kc-bar-wrap{height:3px;background:#f1f5f9;border-radius:2px;margin-top:4px}
-.kc-bar-fill{height:100%;border-radius:2px}
-
-/* ── SE 갱신 ── */
-.renew-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.renew-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.renew-steps{display:flex}
-.renew-step{flex:1;text-align:center;font-size:10px;padding:5px 2px;background:#f8fafc;border:1px solid #e2e8f0;cursor:pointer;transition:all .12s;white-space:nowrap}
-.renew-step:first-child{border-radius:6px 0 0 6px}
-.renew-step:last-child{border-radius:0 6px 6px 0}
-.renew-step.active{background:#4361ee;color:#fff;border-color:#4361ee;font-weight:600}
-.renew-step.done{background:#f0fff4;color:#276749;border-color:#bbf7d0}
-
-/* ── 손익 ── */
-.pnl-pos{color:#10b981;font-weight:600}
-.pnl-neg{color:#ef4444;font-weight:600}
-
-/* ── 마감 체크 ── */
-.check-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:#f8fafc;margin-bottom:6px}
-.check-item.done{background:#f0fff4;opacity:.75}
-.check-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#4361ee}
-.check-label{flex:1;font-size:12px}
-.check-label.done-text{text-decoration:line-through;color:#94a3b8}
-.check-meta{font-size:10px;color:#94a3b8}
-
-/* ── 타임라인 ── */
-.timeline{position:relative;padding-left:18px}
-.timeline::before{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;background:#e2e8f0}
-.tl-item{position:relative;margin-bottom:10px}
-.tl-dot{position:absolute;left:-16px;width:9px;height:9px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #e2e8f0}
-.tl-content{background:#f8fafc;border-radius:8px;padding:7px 9px;font-size:11px}
-.tl-date{font-size:9px;color:#94a3b8;margin-bottom:2px}
-.tl-title{font-weight:600;color:#1a202c}
-.tl-sub{color:#64748b;margin-top:2px}
-
-/* ── 영업담당 ── */
-.rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
-.rep-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:11px 13px}
-.rc-name{font-size:11px;font-weight:700;color:#374151;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #e2e8f0}
-.rc-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
-.rc-lbl{color:#94a3b8}.rc-val{font-weight:600;color:#1a202c}
-.rc-total{display:flex;justify-content:space-between;font-size:12px;font-weight:700;padding-top:5px;margin-top:3px;border-top:1px solid #e2e8f0}
-
-/* ── 사용자 관리 ── */
-.user-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.user-info{display:flex;align-items:center;gap:10px}
-.user-av{width:36px;height:36px;border-radius:50%;background:#eff6ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
-.user-name{font-weight:600;font-size:13px}
-.user-email{font-size:11px;color:#94a3b8}
-.user-actions{display:flex;gap:8px;align-items:center}
-
-/* ── 테이블 ── */
-table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{font-size:10px;font-weight:700;color:#94a3b8;padding:5px 8px;text-align:left;border-bottom:1px solid #f1f5f9;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-tbody td{padding:8px 10px;border-bottom:1px solid #f8fafc;color:#1a202c;vertical-align:middle}
-tbody tr:last-child td{border:none}
-tbody tr:hover td{background:#f8faff}
-.av{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
-.acc-cell{display:flex;align-items:center;gap:5px}
-.bdg{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap}
-.b-red{background:#fff0f0;color:#c53030}.b-yellow{background:#fffbea;color:#92400e}
-.b-green{background:#f0fff4;color:#276749}.b-blue{background:#eff6ff;color:#1d4ed8}
-.b-purple{background:#f5f3ff;color:#6d28d9}.b-gray{background:#f8fafc;color:#64748b}
-.b-orange{background:#fff7ed;color:#c2410c}.b-cyan{background:#ecfeff;color:#0e7490}
-.ttag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700}
-.tsi{background:#e0e7ff;color:#3730a3}.tse{background:#dbeafe;color:#1e40af}.tpr{background:#d1fae5;color:#065f46}
-.pgw{height:3px;background:#f1f5f9;border-radius:2px;width:50px;overflow:hidden;display:inline-block;vertical-align:middle}
-.pgf{height:100%;border-radius:2px}
+#hd{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hl{font-size:15px;font-weight:700}.hl span{color:#4361ee}
+.hbtn{font-size:12px;color:#94a3b8;padding:4px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-family:inherit}
+#bd{display:flex;flex:1;overflow:hidden}
+#sb{width:190px;background:#1a1f2e;overflow-y:auto;flex-shrink:0}
+.sl{padding:7px 14px 3px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+.sl.si{color:#a5b4fc;border-left:3px solid #818cf8;padding-left:11px;background:rgba(129,140,248,.08)}
+.sl.se{color:#67e8f9;border-left:3px solid #22d3ee;padding-left:11px;background:rgba(34,211,238,.08)}
+.sl.pd{color:#6ee7b7;border-left:3px solid #34d399;padding-left:11px;background:rgba(52,211,153,.08)}
+.sl.mg{color:#fcd34d;border-left:3px solid #fbbf24;padding-left:11px;background:rgba(251,191,36,.08)}
+.sn{padding:6px 14px 6px 26px;font-size:12px;color:#7a8fa8;cursor:pointer;transition:all .1s}
+.sn:hover{background:#252b3b;color:#cbd5e1}
+.sn.active{color:#e2e8f0;font-weight:600;background:#252b3b}
+.sdash{padding:8px 14px;font-size:13px;color:#94a3b8;cursor:pointer;transition:all .1s}
+.sdash:hover,.sdash.active{background:rgba(67,97,238,.2);color:#c7d2fe}
+.sdiv{height:1px;background:#2d3548;margin:4px 0}
+#mn{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+#tb{background:#fff;padding:10px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;min-height:48px;flex-shrink:0}
+.pt{font-size:14px;font-weight:700}
+#ct{padding:14px 20px;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ct{font-size:13px;font-weight:700}.cht{font-size:11px;color:#94a3b8}
 .page{display:none}.page.active{display:block}
-
-/* ── 폼 ── */
-.fc{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;margin-bottom:11px}
-.sec-title{font-size:12px;font-weight:700;color:#1a202c;padding-bottom:7px;border-bottom:2px solid #4361ee;margin-bottom:11px}
+.fc{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.st{font-size:13px;font-weight:700;padding-bottom:8px;border-bottom:2px solid #4361ee;margin-bottom:12px}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.fr3{grid-template-columns:1fr 1fr 1fr}.fr4{grid-template-columns:1fr 1fr 1fr 1fr}
-.fg{display:flex;flex-direction:column;gap:3px}
-.flbl{font-size:11px;font-weight:600;color:#64748b}
-.fi{padding:7px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;outline:none;transition:border .12s;width:100%}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:11px;font-weight:600;color:#64748b}
+.fi{padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;outline:none;width:100%}
 .fi:focus{border-color:#4361ee}
 select.fi{background:#fff;cursor:pointer}
-.btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .12s}
-.btn-p{background:#4361ee;color:#fff}.btn-p:hover{background:#3451d1}
-.btn-g{background:#f1f5f9;color:#374151;border:1px solid #e2e8f0}.btn-g:hover{background:#e2e8f0}
-.btn-sm{padding:3px 8px;font-size:10px;border-radius:5px}
-.btn-danger{background:#fff0f0;color:#c53030;border:1px solid #fee2e2}
-.btn-success{background:#f0fff4;color:#276749;border:1px solid #bbf7d0}
-.ta-right{text-align:right;margin-top:6px}
-.bill-row{display:grid;grid-template-columns:1fr 1fr 1.2fr 1fr auto;gap:8px;align-items:end;margin-bottom:7px}
-.attach-box{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:9px 11px;margin-top:6px}
-.attach-link{color:#4361ee;text-decoration:none;font-size:11px}
-.attach-link:hover{text-decoration:underline}
-
-/* ── 모달 ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
-.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:12px;padding:18px 22px;width:520px;max-width:95vw;max-height:88vh;overflow-y:auto}
-.modal-title{font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid #e2e8f0}
-.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:11px;border-top:1px solid #e2e8f0}
-.inv-no-input{font-size:14px;padding:8px 10px;border:2px solid #4361ee;border-radius:8px;width:100%;font-family:inherit;outline:none}
-
-/* ── 로딩 ── */
-.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:#94a3b8;font-size:13px}
-.spinner{width:20px;height:20px;border:2px solid #e2e8f0;border-top-color:#4361ee;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.tag-item{background:#eff6ff;color:#1d4ed8;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px}
-.tag-del{cursor:pointer;color:#94a3b8;font-size:12px}.tag-del:hover{color:#ef4444}
+.btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none}
+.bp{background:#4361ee;color:#fff}.bp:hover{background:#3451d1}
+.bg{background:#f1f5f9;color:#374151;border:1px solid #e2e8f0}
+.sm{padding:3px 8px;font-size:11px;border-radius:5px}
+.tr{text-align:right;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-size:10px;font-weight:700;color:#94a3b8;padding:5px 8px;text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+tbody td{padding:8px 8px;border-bottom:1px solid #f8fafc;vertical-align:middle}
+tbody tr:last-child td{border:none}
+tbody tr:hover td{background:#f8faff}
+.bdg{display:inline-block;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700}
+.br{background:#fff0f0;color:#c53030}.by{background:#fffbea;color:#92400e}
+.bg2{background:#f0fff4;color:#276749}.bb{background:#eff6ff;color:#1d4ed8}
+.bo{background:#fff7ed;color:#c2410c}.bgy{background:#f8fafc;color:#64748b}
+.ttag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:11px;font-weight:700}
+.tsi{background:#e0e7ff;color:#3730a3}.tse{background:#dbeafe;color:#1e40af}.tpr{background:#d1fae5;color:#065f46}
+.kpi3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.kc{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;border-top:3px solid #e2e8f0}
+.kc.kb{border-top-color:#4361ee}.kc.kr{border-top-color:#ef4444}.kc.ky{border-top-color:#f59e0b;cursor:pointer}
+.kl{font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:6px}
+.kv{font-size:20px;font-weight:700;line-height:1}
+.ks{font-size:11px;color:#94a3b8;margin-top:4px}
+.ktabs{display:flex;gap:4px;margin-top:8px}
+.ktab{padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-family:inherit}
+.ktab.on{color:#fff;border-color:transparent}
+.ab{border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.ab.red{background:#fff0f0;border:1px solid #fecaca;color:#991b1b}
+.ab.yel{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.nodata{text-align:center;color:#94a3b8;padding:20px}
+.fsel{padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:inherit;background:#fff;outline:none;cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- ══ 로그인 화면 ══ -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">HK <span>CLOUD</span></div>
-    <div class="login-sub">영업·매출·정산 통합 CRM</div>
-    <div id="login-form">
-      <div class="login-label">이메일</div>
-      <input class="login-input" id="login-email" type="email" placeholder="이메일 입력" autocomplete="email">
-      <div class="login-label">비밀번호</div>
-      <input class="login-input" id="login-pw" type="password" placeholder="비밀번호 입력" autocomplete="current-password">
-      <button class="login-btn" id="login-btn" onclick="doLogin()">로그인</button>
-      <div class="login-err" id="login-err"></div>
-      <div class="login-forgot"><a onclick="showForgot()">비밀번호를 잊으셨나요?</a></div>
-    </div>
-    <div id="forgot-form" style="display:none">
-      <div class="login-label">가입한 이메일</div>
-      <input class="login-input" id="forgot-email" type="email" placeholder="이메일 입력">
-      <button class="login-btn" onclick="doForgot()">재설정 메일 보내기</button>
-      <div class="login-err" id="forgot-msg"></div>
-      <div class="login-forgot"><a onclick="showLogin()">← 로그인으로 돌아가기</a></div>
-    </div>
+  <div class="lb">
+    <div class="ll">HK <span>CLOUD</span></div>
+    <div class="ls">영업·매출·정산 통합 CRM</div>
+    <input class="li" id="le" type="email" placeholder="이메일">
+    <input class="li" id="lp" type="password" placeholder="비밀번호">
+    <button class="lb-btn" id="lbtn" onclick="doLogin()">로그인</button>
+    <div class="le" id="lerr"></div>
   </div>
 </div>
 
-<!-- ══ 앱 화면 ══ -->
 <div id="app">
-  <div id="header">
-    <div class="header-logo">HK <span>CLOUD</span></div>
-    <div class="header-right">
-      <span class="header-user" id="header-user"></span>
-      <span class="header-role" id="header-role"></span>
-      <button class="header-logout" onclick="doLogout()">로그아웃</button>
-    </div>
+  <div id="hd">
+    <div class="hl">HK <span>CLOUD</span></div>
+    <button class="hbtn" onclick="doLogout()">로그아웃</button>
   </div>
-  <div id="body">
-    <div id="sidebar">
-      <div class="nav-sec"><div class="nav-item active" onclick="go('dashboard',this)">🏠 대시보드</div></div>
-      <div class="nav-div"></div>
-      <div class="nav-sec">
-        <div class="nav-lbl lbl-si">SI</div>
-        <div class="nav-sub" id="nav-si-kanban" onclick="go('si-kanban',this)">프로젝트 현황</div>
-        <div class="nav-sub" id="nav-si-project" onclick="go('si-project',this)">프로젝트 등록</div>
-        <div class="nav-sub" id="nav-si-sales" onclick="go('si-sales',this)">청구 · 매출</div>
-        <div class="nav-sub" id="nav-si-purchase" onclick="go('si-purchase',this)">매입</div>
-        <div class="nav-sub" id="nav-si-pnl" onclick="go('si-pnl',this)">손익</div>
-      </div>
-      <div class="nav-div"></div>
-      <div class="nav-sec">
-        <div class="nav-lbl lbl-se">SE</div>
-        <div class="nav-sub" id="nav-se-contract" onclick="go('se-contract',this)">계약 등록 · 관리</div>
-        <div class="nav-sub" id="nav-se-renew" onclick="go('se-renew',this)">갱신 관리</div>
-        <div class="nav-sub" id="nav-se-sales" onclick="go('se-sales',this)">청구 · 매출</div>
-        <div class="nav-sub" id="nav-se-purchase" onclick="go('se-purchase',this)">매입</div>
-      </div>
-      <div class="nav-div"></div>
-      <div class="nav-sec">
-        <div class="nav-lbl lbl-prod">단품</div>
-        <div class="nav-sub" id="nav-prod-sales" onclick="go('prod-sales',this)">매출</div>
-        <div class="nav-sub" id="nav-prod-purchase" onclick="go('prod-purchase',this)">매입</div>
-      </div>
-      <div class="nav-div"></div>
-      <div class="nav-sec">
-        <div class="nav-lbl lbl-mgmt">관리</div>
-        <div class="nav-sub" onclick="go('tax',this)">세금계산서</div>
-        <div class="nav-sub" onclick="go('closing',this)">월 마감</div>
-        <div class="nav-sub" onclick="go('accounts',this)">거래처</div>
-        <div class="nav-sub" onclick="go('sales-rep',this)">영업담당별</div>
-        <div class="nav-sub" id="nav-users" onclick="go('users',this)" style="display:none">사용자 관리</div>
-        <div class="nav-sub" onclick="go('settings',this)">설정</div>
-      </div>
+  <div id="bd">
+    <div id="sb">
+      <div class="sdash active" onclick="go('dash',this)">🏠 대시보드</div>
+      <div class="sdiv"></div>
+      <div class="sl si">SI</div>
+      <div class="sn" onclick="go('si-proj',this)">프로젝트 등록</div>
+      <div class="sn" onclick="go('si-bill',this)">청구 · 매출</div>
+      <div class="sn" onclick="go('si-buy',this)">매입</div>
+      <div class="sdiv"></div>
+      <div class="sl se">SE</div>
+      <div class="sn" onclick="go('se-cont',this)">계약 관리</div>
+      <div class="sn" onclick="go('se-bill',this)">청구 · 매출</div>
+      <div class="sn" onclick="go('se-buy',this)">매입</div>
+      <div class="sdiv"></div>
+      <div class="sl pd">단품</div>
+      <div class="sn" onclick="go('pd-sale',this)">매출</div>
+      <div class="sn" onclick="go('pd-buy',this)">매입</div>
+      <div class="sdiv"></div>
+      <div class="sl pd" style="color:#c4b5fd;border-left-color:#a78bfa;background:rgba(167,139,250,.08)">제경비</div>
+      <div class="sn" onclick="go('exp',this)">제경비 등록</div>
+      <div class="sdiv"></div>
+      <div class="sl mg">관리</div>
+      <div class="sn" onclick="go('tax',this)">세금계산서</div>
+      <div class="sn" onclick="go('acc',this)">거래처</div>
     </div>
+    <div id="mn">
+      <div id="tb"><div class="pt" id="ptitle">대시보드</div><div id="tbr"></div></div>
+      <div id="ct">
 
-    <div id="main">
-      <div id="topbar">
-        <div class="page-title" id="ptitle">대시보드</div>
-        <div class="topbar-r" id="topfilters">
-          <select class="fsel" id="f-year" onchange="renderDash()"><option>2025</option><option selected>2026</option><option>2027</option></select>
-          <select class="fsel" id="f-view" onchange="renderDash()"><option value="monthly">월별</option><option value="quarter">분기별</option></select>
-          <select class="fsel" id="f-type" onchange="renderDash()"><option value="">전체</option><option>SI</option><option>SE</option><option>단품</option></select>
-        </div>
-      </div>
-      <div id="content">
-
-        <!-- 대시보드 -->
-        <div id="page-dashboard" class="page active">
-          <div id="alert-banner" style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-            <!-- 매출 카드 -->
-            <div class="kpi-big ab">
-              <div class="kpi-big-lbl">이번달 매출</div>
-              <div class="kpi-big-val" id="k-sales-val">-</div>
-              <div class="kpi-big-sub" id="k-sales-sub">전체</div>
-              <div class="kpi-tabs">
-                <button class="kpi-tab on" style="background:#4361ee" onclick="switchKpi('sales','all',this)">전체</button>
-                <button class="kpi-tab" onclick="switchKpi('sales','si',this)">SI</button>
-                <button class="kpi-tab" onclick="switchKpi('sales','se',this)">SE</button>
-                <button class="kpi-tab" onclick="switchKpi('sales','prod',this)">단품</button>
-              </div>
-            </div>
-            <!-- 매입 카드 -->
-            <div class="kpi-big ar">
-              <div class="kpi-big-lbl">이번달 매입</div>
-              <div class="kpi-big-val" id="k-buy-val">-</div>
-              <div class="kpi-big-sub" id="k-buy-sub">전체</div>
-              <div class="kpi-tabs">
-                <button class="kpi-tab on" style="background:#ef4444" onclick="switchKpi('buy','all',this)">전체</button>
-                <button class="kpi-tab" onclick="switchKpi('buy','si',this)">SI</button>
-                <button class="kpi-tab" onclick="switchKpi('buy','se',this)">SE</button>
-                <button class="kpi-tab" onclick="switchKpi('buy','prod',this)">단품</button>
-                <button class="kpi-tab" onclick="switchKpi('buy','exp',this)">제경비</button>
-              </div>
-            </div>
-            <!-- 미발행 카드 -->
-            <div class="kpi-big aa" style="cursor:pointer" onclick="go('tax',null)">
-              <div class="kpi-big-lbl">미발행 세금계산서</div>
-              <div class="kpi-big-val" id="k-notissued" style="color:#f59e0b">-</div>
-              <div class="kpi-big-sub">클릭하여 처리 →</div>
-            </div>
-          </div>
-          <div class="dash-grid">
-            <div class="card" style="grid-column:span 2">
-              <div class="card-hd"><div class="card-title">📊 매출 · 매입 현황</div><div class="card-hint">만원</div></div>
-              <div class="chart-box"><canvas id="barChart"></canvas></div>
-              <div class="leg-row">
-                <div class="leg"><div class="leg-dot" style="background:#4361ee"></div>SI</div>
-                <div class="leg"><div class="leg-dot" style="background:#06b6d4"></div>SE</div>
-                <div class="leg"><div class="leg-dot" style="background:#10b981"></div>단품</div>
-                <div class="leg"><div class="leg-dot" style="background:#f87171"></div>매입</div>
-                <div class="leg"><div class="leg-dot" style="background:#fb923c"></div>제경비</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-hd"><div class="card-title">🍩 구성비</div><div class="card-hint">매출/매입/제경비</div></div>
-              <div class="donut3">
-                <div class="d3-item"><div class="d3-canvas"><canvas id="d-sales"></canvas><div class="d3-center"><div class="d3-val" id="d-sv">-</div><div class="d3-sub">만</div></div></div><div class="d3-label" style="color:#4361ee">매출</div><div class="d3-legs" id="d-sl"></div></div>
-                <div class="d3-item"><div class="d3-canvas"><canvas id="d-buy"></canvas><div class="d3-center"><div class="d3-val" id="d-bv">-</div><div class="d3-sub">만</div></div></div><div class="d3-label" style="color:#f87171">매입</div><div class="d3-legs" id="d-bl"></div></div>
-                <div class="d3-item"><div class="d3-canvas"><canvas id="d-exp"></canvas><div class="d3-center"><div class="d3-val" id="d-ev">-</div><div class="d3-sub">만</div></div></div><div class="d3-label" style="color:#fb923c">제경비</div><div class="d3-legs" id="d-el"></div></div>
-              </div>
-            </div>
-          </div>
-          <div class="dash-bot">
-            <div class="card">
-              <div class="card-hd"><div class="card-title">🔴 이번달 세금계산서</div><div class="card-hint" id="tax-m-hint"></div></div>
-              <table><thead><tr><th>거래처</th><th>구분</th><th>금액</th><th>예정일</th><th>상태</th><th>액션</th></tr></thead><tbody id="tbl-notissued"></tbody></table>
-            </div>
-            <div class="card">
-              <div class="card-hd"><div class="card-title">🟡 SE 갱신 임박</div><div class="card-hint">90일 이내</div></div>
-              <table><thead><tr><th>거래처</th><th>계약명</th><th>종료일</th><th>D-day</th><th></th></tr></thead><tbody id="tbl-renew"></tbody></table>
-            </div>
-          </div>
-        </div>
-
-        <!-- SI 칸반 -->
-        <div id="page-si-kanban" class="page">
-          <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
-            <div style="font-size:11px;color:#94a3b8">카드를 드래그해서 단계를 이동하세요.</div>
-            <button class="btn btn-p btn-sm" onclick="go('si-project',null)">+ 프로젝트 등록</button>
-          </div>
-          <div class="kanban-wrap" id="kanban-board"></div>
-        </div>
-
-        <!-- SI 프로젝트 등록 -->
-        <div id="page-si-project" class="page">
-          <div class="fc">
-            <div class="sec-title">SI 프로젝트 등록</div>
-            <div class="fr fr3">
-              <div class="fg"><label class="flbl">프로젝트 코드</label><input class="fi" id="si-code" placeholder="CPAAA01"></div>
-              <div class="fg"><label class="flbl">거래처 *</label><select class="fi" id="si-acc"></select></div>
-              <div class="fg"><label class="flbl">프로젝트명 *</label><input class="fi" id="si-name"></div>
-            </div>
-            <div class="fr fr3">
-              <div class="fg"><label class="flbl">계약금액 (원, VAT별도)</label><input class="fi" id="si-amt" type="number"></div>
-              <div class="fg"><label class="flbl">착수일</label><input class="fi" id="si-start" type="date"></div>
-              <div class="fg"><label class="flbl">완료 예정일</label><input class="fi" id="si-end" type="date"></div>
-            </div>
-            <div class="fr fr3">
-              <div class="fg"><label class="flbl">PM</label><input class="fi" id="si-pm"></div>
-              <div class="fg"><label class="flbl">영업 담당자</label><select class="fi" id="si-rep"></select></div>
-              <div class="fg"><label class="flbl">메모</label><input class="fi" id="si-note"></div>
-            </div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addSIProject()">등록</button></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><div class="card-title">프로젝트 목록</div><select class="fsel" id="sip-frep" onchange="renderSIProject()"><option value="">전체 담당</option></select></div>
-            <table><thead><tr><th>코드</th><th>거래처</th><th>프로젝트명</th><th>담당</th><th>PM</th><th>상태</th><th style="text-align:right">계약금액</th><th style="text-align:right">입금완료</th><th>진행률</th><th>청구일정</th></tr></thead><tbody id="tbl-si-proj"></tbody></table>
-          </div>
-        </div>
-
-        <!-- SI 청구·매출 -->
-        <div id="page-si-sales" class="page">
-          <div class="fc">
-            <div class="sec-title">청구 일정 등록</div>
-            <div class="fr">
-              <div class="fg"><label class="flbl">프로젝트 *</label><select class="fi" id="sis-proj"></select></div>
-              <div class="fg"><label class="flbl">발행 방식</label><select class="fi" id="sis-itype"><option value="홈택스">홈택스</option><option value="나라빌">나라빌</option><option value="역발행">역발행</option><option value="검수후발행">검수 후 발행</option></select></div>
-            </div>
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:11px;margin-top:2px">
-              <div style="font-size:11px;font-weight:600;color:#4361ee;margin-bottom:7px">청구 일정</div>
-              <div id="bill-lines"></div>
-              <button class="btn btn-g btn-sm" onclick="addBillLine()" style="margin-top:4px">+ 항목 추가</button>
-            </div>
-            <div class="ta-right" style="margin-top:8px"><button class="btn btn-p" onclick="saveSISales()">저장</button></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><div class="card-title">SI 청구 목록</div><select class="fsel" id="sis-frep" onchange="renderSISales()"><option value="">전체 담당</option></select></div>
-            <table><thead><tr><th>거래처</th><th>프로젝트</th><th>담당</th><th>구분</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th><th>액션</th></tr></thead><tbody id="tbl-si-sales"></tbody></table>
-          </div>
-        </div>
-
-        <!-- SI 매입 -->
-        <div id="page-si-purchase" class="page">
-          <div class="fc">
-            <div class="sec-title">SI 매입 등록</div>
-            <div class="fr"><div class="fg"><label class="flbl">매입처 *</label><input class="fi" id="sip-vendor"></div><div class="fg"><label class="flbl">연결 프로젝트</label><select class="fi" id="sip-proj"></select></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">발행일</label><input class="fi" id="sip-date" type="date"></div><div class="fg"><label class="flbl">공급가 (원)</label><input class="fi" id="sip-amt" type="number"></div><div class="fg"><label class="flbl">VAT (원)</label><input class="fi" id="sip-vat" type="number"></div></div>
-            <div class="fr fr3">
-              <div class="fg"><label class="flbl">분류</label><select class="fi" id="sip-cat"><option>외주</option><option>인건비</option><option>장비</option><option>소모품</option><option>기타</option></select></div>
-              <div class="fg"><label class="flbl">문서 종류</label><select class="fi" id="sip-doctype" onchange="toggleAttach('sip')"><option value="">없음</option><option>검수확인서</option><option>납품확인서</option><option>완료확인서</option><option>기타</option></select></div>
-              <div class="fg"><label class="flbl">메모</label><input class="fi" id="sip-note"></div>
-            </div>
-            <div id="sip-attach" style="display:none" class="attach-box">
-              <div style="font-size:10px;font-weight:600;color:#4361ee;margin-bottom:5px">📎 첨부 링크</div>
-              <div class="fr" style="margin-bottom:0"><div class="fg"><label class="flbl">파일명</label><input class="fi" id="sip-fname"></div><div class="fg"><label class="flbl">링크 URL</label><input class="fi" id="sip-furl" placeholder="https://drive.google.com/..."></div></div>
-            </div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addSIPurchase()">등록</button></div>
-          </div>
-          <div class="card"><table><thead><tr><th>발행일</th><th>매입처</th><th>프로젝트</th><th>분류</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>첨부</th><th>메모</th></tr></thead><tbody id="tbl-sip"></tbody></table></div>
-        </div>
-
-        <!-- SI 손익 -->
-        <div id="page-si-pnl" class="page">
-          <div class="card">
-            <div class="card-hd"><div class="card-title">📈 프로젝트별 손익</div><select class="fsel" id="pnl-frep" onchange="renderPnL()"><option value="">전체 담당</option></select></div>
-            <table><thead><tr><th>코드</th><th>거래처</th><th>프로젝트명</th><th>담당</th><th style="text-align:right">계약금액</th><th style="text-align:right">입금완료</th><th style="text-align:right">매입합계</th><th style="text-align:right">손익</th><th style="text-align:right">이익률</th></tr></thead><tbody id="tbl-pnl"></tbody></table>
-          </div>
-        </div>
-
-        <!-- SE 계약 -->
-        <div id="page-se-contract" class="page">
-          <div class="fc">
-            <div class="sec-title">SE 계약 등록</div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">Job Code</label><input class="fi" id="se-code" placeholder="CSAAA01"></div><div class="fg"><label class="flbl">거래처 *</label><select class="fi" id="se-acc"></select></div><div class="fg"><label class="flbl">계약명 *</label><input class="fi" id="se-name"></div></div>
-            <div class="fr fr4"><div class="fg"><label class="flbl">시작일</label><input class="fi" id="se-start" type="date"></div><div class="fg"><label class="flbl">종료일</label><input class="fi" id="se-end" type="date"></div><div class="fg"><label class="flbl">청구 주기</label><select class="fi" id="se-cycle"><option value="monthly">월별</option><option value="quarter">분기별</option><option value="half">반기별</option><option value="annual">연간</option></select></div><div class="fg"><label class="flbl">청구일 (n일)</label><input class="fi" id="se-bday" type="number" value="25" min="1" max="28"></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">1회 금액 (원, VAT별도)</label><input class="fi" id="se-amt" type="number"></div><div class="fg"><label class="flbl">발행 방식</label><select class="fi" id="se-itype"><option value="홈택스">홈택스</option><option value="나라빌">나라빌</option><option value="역발행">역발행</option><option value="검수후발행">검수후발행</option></select></div><div class="fg"><label class="flbl">영업 담당자</label><select class="fi" id="se-rep"></select></div></div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addSEContract()">등록 + 청구예정 자동생성</button></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><div class="card-title">계약 목록</div><select class="fsel" id="sec-frep" onchange="renderSEContract()"><option value="">전체 담당</option></select></div>
-            <table><thead><tr><th>코드</th><th>거래처</th><th>계약명</th><th>담당</th><th>주기</th><th>발행방식</th><th>상태</th><th style="text-align:right">1회금액</th><th>종료일</th><th>D-day</th><th>소급</th></tr></thead><tbody id="tbl-se-cont"></tbody></table>
-          </div>
-        </div>
-
-        <!-- SE 갱신 -->
-        <div id="page-se-renew" class="page">
-          <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">단계 버튼을 클릭해서 갱신 진행 상태를 업데이트하세요.</div>
-          <div id="renew-list"></div>
-        </div>
-
-        <!-- SE 청구·매출 -->
-        <div id="page-se-sales" class="page">
-          <div class="fc">
-            <div class="sec-title">SE 청구 수동 추가 (소급 등)</div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">계약 *</label><select class="fi" id="ses-cont"></select></div><div class="fg"><label class="flbl">예정일</label><input class="fi" id="ses-date" type="date"></div><div class="fg"><label class="flbl">공급가 (원)</label><input class="fi" id="ses-amt" type="number"></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">유형</label><select class="fi" id="ses-type"><option>정기</option><option>소급적용</option><option>추가청구</option><option>기타</option></select></div><div class="fg"><label class="flbl">발행 방식</label><select class="fi" id="ses-itype"><option value="홈택스">홈택스</option><option value="나라빌">나라빌</option><option value="역발행">역발행</option><option value="검수후발행">검수후발행</option></select></div><div class="fg"><label class="flbl">메모</label><input class="fi" id="ses-note"></div></div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addSEBilling()">추가</button></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><div class="card-title">SE 청구 목록</div><div style="display:flex;gap:6px"><select class="fsel" id="ses-frep" onchange="renderSESales()"><option value="">전체 담당</option></select><select class="fsel" id="ses-fstat" onchange="renderSESales()"><option value="">전체 상태</option><option>미발행</option><option>검수대기</option><option>발행완료</option><option>입금완료</option></select></div></div>
-            <table><thead><tr><th>거래처</th><th>계약명</th><th>담당</th><th>유형</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th><th>액션</th></tr></thead><tbody id="tbl-se-sales"></tbody></table>
-          </div>
-        </div>
-
-        <!-- SE 매입 -->
-        <div id="page-se-purchase" class="page">
-          <div class="fc">
-            <div class="sec-title">SE 매입 등록</div>
-            <div class="fr"><div class="fg"><label class="flbl">매입처 *</label><input class="fi" id="sep-vendor"></div><div class="fg"><label class="flbl">연결 계약</label><select class="fi" id="sep-cont"></select></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">발행일</label><input class="fi" id="sep-date" type="date"></div><div class="fg"><label class="flbl">공급가 (원)</label><input class="fi" id="sep-amt" type="number"></div><div class="fg"><label class="flbl">문서 종류</label><select class="fi" id="sep-doctype" onchange="toggleAttach('sep')"><option value="">없음</option><option>검수확인서</option><option>납품확인서</option><option>완료확인서</option><option>기타</option></select></div></div>
-            <div id="sep-attach" style="display:none" class="attach-box"><div style="font-size:10px;font-weight:600;color:#4361ee;margin-bottom:5px">📎 첨부 링크</div><div class="fr" style="margin-bottom:0"><div class="fg"><label class="flbl">파일명</label><input class="fi" id="sep-fname"></div><div class="fg"><label class="flbl">링크 URL</label><input class="fi" id="sep-furl" placeholder="https://drive.google.com/..."></div></div></div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addSEPurchase()">등록</button></div>
-          </div>
-          <div class="card"><table><thead><tr><th>발행일</th><th>매입처</th><th>계약</th><th style="text-align:right">공급가</th><th>첨부</th></tr></thead><tbody id="tbl-sep"></tbody></table></div>
-        </div>
-
-        <!-- 단품 매출 -->
-        <div id="page-prod-sales" class="page">
-          <div class="fc">
-            <div class="sec-title">단품 매출 등록</div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">Job Code</label><input class="fi" id="pd-code" placeholder="CXAAA01"></div><div class="fg"><label class="flbl">거래처 *</label><select class="fi" id="pd-acc"></select></div><div class="fg"><label class="flbl">상품명 *</label><input class="fi" id="pd-name"></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">수량</label><input class="fi" id="pd-qty" type="number" value="1"></div><div class="fg"><label class="flbl">단가 (원, VAT별도)</label><input class="fi" id="pd-price" type="number"></div><div class="fg"><label class="flbl">매출일</label><input class="fi" id="pd-date" type="date"></div></div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addProd()">등록</button></div>
-          </div>
-          <div class="card"><table><thead><tr><th>매출일</th><th>거래처</th><th>상품명</th><th style="text-align:center">수량</th><th style="text-align:right">단가</th><th style="text-align:right">합계</th></tr></thead><tbody id="tbl-prod"></tbody></table></div>
-        </div>
-
-        <!-- 단품 매입 -->
-        <div id="page-prod-purchase" class="page">
-          <div class="fc">
-            <div class="sec-title">단품 매입 등록</div>
-            <div class="fr"><div class="fg"><label class="flbl">매입처 *</label><input class="fi" id="pb-vendor"></div><div class="fg"><label class="flbl">문서 종류</label><select class="fi" id="pb-doctype" onchange="toggleAttach('pb')"><option value="">없음</option><option>검수확인서</option><option>납품확인서</option><option>완료확인서</option><option>기타</option></select></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">발행일</label><input class="fi" id="pb-date" type="date"></div><div class="fg"><label class="flbl">공급가 (원)</label><input class="fi" id="pb-amt" type="number"></div><div class="fg"><label class="flbl">메모</label><input class="fi" id="pb-note"></div></div>
-            <div id="pb-attach" style="display:none" class="attach-box"><div style="font-size:10px;font-weight:600;color:#4361ee;margin-bottom:5px">📎 첨부 링크</div><div class="fr" style="margin-bottom:0"><div class="fg"><label class="flbl">파일명</label><input class="fi" id="pb-fname"></div><div class="fg"><label class="flbl">링크 URL</label><input class="fi" id="pb-furl" placeholder="https://drive.google.com/..."></div></div></div>
-            <div class="ta-right"><button class="btn btn-p" onclick="addPB()">등록</button></div>
-          </div>
-          <div class="card"><table><thead><tr><th>발행일</th><th>매입처</th><th style="text-align:right">공급가</th><th>첨부</th><th>메모</th></tr></thead><tbody id="tbl-pb"></tbody></table></div>
-        </div>
-
-        <!-- 세금계산서 -->
-        <div id="page-tax" class="page">
-          <div class="fc"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select class="fsel" id="tx-year"><option>2025</option><option selected>2026</option><option>2027</option></select>
-            <select class="fsel" id="tx-mon"><option value="0">전체월</option></select>
-            <select class="fsel" id="tx-type"><option value="">전체구분</option><option>SI</option><option>SE</option><option>단품</option></select>
-            <select class="fsel" id="tx-stat"><option value="">전체상태</option><option>미발행</option><option>검수대기</option><option>발행완료</option><option>입금완료</option></select>
-            <select class="fsel" id="tx-issue"><option value="">전체방식</option><option>홈택스</option><option>나라빌</option><option>역발행</option><option>검수후발행</option></select>
-            <select class="fsel" id="tx-rep"><option value="">전체담당</option></select>
-            <button class="btn btn-g btn-sm" onclick="renderTax()">조회</button>
-          </div></div>
-          <div class="card"><table><thead><tr><th>거래처</th><th>담당</th><th>구분</th><th>건명</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th><th>액션</th></tr></thead><tbody id="tbl-tax"></tbody></table></div>
-        </div>
-
-        <!-- 월 마감 -->
-        <div id="page-closing" class="page">
-          <div class="card"><div class="card-hd"><div class="card-title">📋 월 마감 체크리스트</div><div style="display:flex;gap:6px;align-items:center"><select class="fsel" id="cl-year"><option>2025</option><option selected>2026</option></select><select class="fsel" id="cl-mon"></select><button class="btn btn-g btn-sm" onclick="renderClosing()">조회</button></div></div><div id="closing-list"></div><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8" id="closing-summary"></div></div>
-        </div>
-
-        <!-- 거래처 -->
-        <div id="page-accounts" class="page">
-          <div class="fc">
-            <div class="sec-title">거래처 등록</div>
-            <div class="fr"><div class="fg"><label class="flbl">상호 *</label><input class="fi" id="ac-name"></div><div class="fg"><label class="flbl">사업자번호</label><input class="fi" id="ac-biz"></div></div>
-            <div class="fr fr3"><div class="fg"><label class="flbl">담당자</label><input class="fi" id="ac-contact"></div><div class="fg"><label class="flbl">전화번호</label><input class="fi" id="ac-phone"></div><div class="fg"><label class="flbl">구분</label><select class="fi" id="ac-tag"><option>SI</option><option>SE</option><option>혼합</option></select></div></div>
-            <div class="fr"><div class="fg"><label class="flbl">영업 담당자</label><select class="fi" id="ac-rep"></select></div><div class="fg" style="justify-content:flex-end;padding-top:14px"><button class="btn btn-p" onclick="addAcc()">등록</button></div></div>
-          </div>
-          <input class="fi" id="acc-search" placeholder="🔍 거래처 검색" oninput="renderAcc()" style="max-width:240px;margin-bottom:10px">
-          <div id="acc-history-list"></div>
-        </div>
-
-        <!-- 영업담당별 -->
-        <div id="page-sales-rep" class="page">
-          <div class="card" style="margin-bottom:11px"><div class="card-hd"><div class="card-title">👤 영업담당별 매출 현황</div><select class="fsel" id="sr-year" onchange="renderSalesRep()"><option>2025</option><option selected>2026</option><option>2027</option></select></div><div class="rep-grid" id="rep-cards"></div></div>
-          <div class="card"><div class="card-hd"><div class="card-title">담당자별 청구 상세</div><select class="fsel" id="sr-rep" onchange="renderSalesRep()"><option value="">전체 담당</option></select></div><table><thead><tr><th>담당</th><th>거래처</th><th>구분</th><th>건명</th><th>예정일</th><th style="text-align:right">공급가</th><th>상태</th></tr></thead><tbody id="tbl-sr"></tbody></table></div>
-        </div>
-
-        <!-- 사용자 관리 (admin 전용) -->
-        <div id="page-users" class="page">
-          <div class="fc" style="margin-bottom:11px">
-            <div class="sec-title">👥 팀원 계정 생성</div>
-            <div class="fr fr4">
-              <div class="fg"><label class="flbl">이름 *</label><input class="fi" id="inv-name" placeholder="홍길동"></div>
-              <div class="fg"><label class="flbl">이메일 *</label><input class="fi" id="inv-email" type="email" placeholder="hong@company.com"></div>
-              <div class="fg"><label class="flbl">비밀번호 *</label><input class="fi" id="inv-pw" type="password" placeholder="8자 이상"></div>
-              <div class="fg"><label class="flbl">권한</label>
-                <select class="fi" id="inv-role">
-                  <option value="manager">매니저 (전체 조회·수정)</option>
-                  <option value="sales">영업 (담당 데이터)</option>
-                  <option value="viewer">열람 (조회만)</option>
-                </select>
-              </div>
-            </div>
-            <div class="ta-right"><button class="btn btn-p" onclick="inviteUser()">계정 생성</button></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><div class="card-title">팀원 목록</div><button class="btn btn-g btn-sm" onclick="loadUsers()">새로고침</button></div>
-            <div id="user-list"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
-          </div>
-        </div>
-
-        <!-- 설정 -->
-        <div id="page-settings" class="page">
-          <div class="fc" style="margin-bottom:11px">
-            <div class="sec-title">👤 영업 담당자 관리</div>
-            <div class="tag-list" id="rep-tag-list"></div>
-            <div style="display:flex;gap:8px"><input class="fi" id="new-rep-name" placeholder="담당자 이름" style="max-width:180px"><button class="btn btn-p" onclick="addRepSetting()">추가</button></div>
-          </div>
-          <div class="fc" style="margin-bottom:11px">
-            <div class="sec-title">🔑 비밀번호 변경</div>
-            <div class="fr">
-              <div class="fg"><label class="flbl">새 비밀번호</label><input class="fi" id="new-pw" type="password" placeholder="8자 이상"></div>
-              <div class="fg"><label class="flbl">비밀번호 확인</label><input class="fi" id="new-pw2" type="password" placeholder="동일하게 입력"></div>
-            </div>
-            <div class="ta-right"><button class="btn btn-p" onclick="changePw()">변경</button></div>
-          </div>
-        </div>
-
-      </div>
+<!-- 미발행 팝업 -->
+<div id="ni-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:20px 24px;width:520px;max-width:95vw;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f1f5f9">
+      <div style="font-size:14px;font-weight:700">📋 미발행 세금계산서</div>
+      <button onclick="document.getElementById('ni-popup').style.display='none'" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer">×</button>
+    </div>
+    <div id="ni-list"></div>
+    <div style="text-align:right;margin-top:14px;padding-top:10px;border-top:1px solid #f1f5f9">
+      <button class="btn bp sm" onclick="document.getElementById('ni-popup').style.display='none'">확인</button>
     </div>
   </div>
 </div>
 
-
-<!-- 슬라이드 상세 패널 -->
-<div id="panel-overlay" onclick="closePanel()"></div>
-<div id="detail-panel">
-  <div class="panel-hd">
-    <div class="panel-title" id="panel-title">상세 정보</div>
-    <button class="panel-close" onclick="closePanel()">×</button>
+<!-- 대시보드 -->
+<div id="page-dash" class="page active">
+  <!-- 상단: KPI 3개 + 필터 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;margin-bottom:12px;align-items:stretch">
+    <div class="kc kb">
+      <div class="kl">이번달 매출</div>
+      <div class="kv" id="k-sale" style="color:#4361ee">-</div>
+      <div class="ks">VAT 포함</div>
+    </div>
+    <div class="kc kr">
+      <div class="kl">이번달 손익</div>
+      <div class="kv" id="k-pnl">-</div>
+      <div class="ks">매출 - 매입 - 제경비</div>
+    </div>
+    <div class="kc" style="border-top-color:#f59e0b;cursor:pointer" onclick="openNiPopup()">
+      <div class="kl">미발행 세금계산서</div>
+      <div class="kv" id="k-ni" style="color:#f59e0b">-</div>
+      <div class="ks">클릭하여 확인</div>
+    </div>
+    <!-- 필터 -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:200px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:#94a3b8;min-width:44px">구분</span>
+        <select class="fsel" id="f-type" onchange="renderDash()" style="flex:1">
+          <option value="">전체</option><option>SI</option><option>SE</option><option>단품</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:#94a3b8;min-width:44px">월</span>
+        <select class="fsel" id="f-month" onchange="renderDash()" style="flex:1">
+          <option value="">전체</option>
+          <option>1월</option><option>2월</option><option>3월</option><option>4월</option>
+          <option>5월</option><option>6월</option><option>7월</option><option>8월</option>
+          <option>9월</option><option>10월</option><option>11월</option><option>12월</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:#94a3b8;min-width:44px">프로젝트</span>
+        <select class="fsel" id="f-proj" onchange="renderDash()" style="flex:1">
+          <option value="">전체</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:#94a3b8;min-width:44px">진행</span>
+        <select class="fsel" id="f-status" onchange="renderDash()" style="flex:1">
+          <option value="">전체</option><option value="active">진행중</option><option value="done">완료</option>
+        </select>
+      </div>
+    </div>
   </div>
-  <div class="panel-body" id="panel-body"></div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="card">
+      <div class="ch"><div class="ct">📊 매출·매입 현황</div><div class="cht">만원</div></div>
+      <div style="height:130px"><canvas id="barC"></canvas></div>
+      <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#4361ee;border-radius:2px;display:inline-block"></span>SI</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#06b6d4;border-radius:2px;display:inline-block"></span>SE</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#10b981;border-radius:2px;display:inline-block"></span>단품</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b"><span style="width:8px;height:8px;background:#f87171;border-radius:2px;display:inline-block"></span>매입</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">🍩 매출 구성비</div><div class="cht" id="donut-yr">연간</div></div>
+      <div style="position:relative;width:110px;height:110px;margin:0 auto">
+        <canvas id="donutC" width="110" height="110"></canvas>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
+          <div style="font-size:12px;font-weight:700;color:#1a202c;line-height:1" id="donut-total">-</div>
+          <div style="font-size:9px;color:#94a3b8">만원</div>
+        </div>
+      </div>
+      <div style="margin-top:8px" id="donut-legs"></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card">
+      <div class="ch"><div class="ct">🔴 이번달 세금계산서</div></div>
+      <table><thead><tr><th>거래처</th><th>구분</th><th style="text-align:right">금액</th><th>예정일</th><th>상태</th><th>액션</th></tr></thead><tbody id="tb-dash-tax"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">🟡 SE 갱신 임박</div><div class="cht">90일 이내</div></div>
+      <table><thead><tr><th>거래처</th><th>계약명</th><th>종료일</th><th>D-day</th></tr></thead><tbody id="tb-dash-se"></tbody></table>
+    </div>
+  </div>
 </div>
 
-<!-- 청구일정 모달 -->
-<div class="modal-bg" id="bill-modal">
-  <div class="modal">
-    <div class="modal-title" id="bill-modal-title">청구 일정</div>
-    <table><thead><tr><th>구분</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th></tr></thead><tbody id="tbl-bill-modal"></tbody></table>
-    <div class="modal-footer"><button class="btn btn-g" onclick="closeModal('bill-modal')">닫기</button></div>
+<!-- SI 프로젝트 -->
+<div id="page-si-proj" class="page">
+  <div class="fc">
+    <div class="st">SI 프로젝트 등록</div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">Job Code (CPAAA01)</label><input class="fi" id="sic" placeholder="CPAAA01"></div>
+      <div class="fg"><label class="fl">거래처 *</label><select class="fi" id="sia"></select></div>
+      <div class="fg"><label class="fl">프로젝트명 *</label><input class="fi" id="sin"></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">계약금액 (원)</label><input class="fi" id="sim" type="text" placeholder="0" oninput="fmtI(this)"></div>
+      <div class="fg"><label class="fl">착수일</label><input class="fi" id="sis" type="date"></div>
+      <div class="fg"><label class="fl">완료예정일</label><input class="fi" id="sie" type="date"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">영업담당</label><select class="fi" id="sir"></select></div>
+      <div class="fg"><label class="fl">메모</label><input class="fi" id="sino"></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addSIProj()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>코드</th><th>거래처</th><th>프로젝트명</th><th>담당</th><th>상태</th><th style="text-align:right">계약금액</th><th style="text-align:right">입금완료</th><th>청구일정</th></tr></thead><tbody id="tb-sip"></tbody></table></div>
+</div>
+
+<!-- SI 청구 -->
+<div id="page-si-bill" class="page">
+  <div class="fc">
+    <div class="st">청구 등록</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">프로젝트 *</label><select class="fi" id="sibp"></select></div>
+      <div class="fg"><label class="fl">구분</label><select class="fi" id="sibt"><option>선금</option><option>중도금</option><option>잔금</option><option>기타</option></select></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">예정일</label><input class="fi" id="sibd" type="date"></div>
+      <div class="fg"><label class="fl">공급가 (원)</label><input class="fi" id="siba" type="text" placeholder="0" oninput="fmtI(this)"></div>
+      <div class="fg"><label class="fl">발행방식</label><select class="fi" id="sibm"><option>홈택스</option><option>나라빌</option><option>역발행</option><option>검수후발행</option></select></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addSIBill()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>거래처</th><th>프로젝트</th><th>구분</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th><th>액션</th></tr></thead><tbody id="tb-sib"></tbody></table></div>
+</div>
+
+<!-- SI 매입 -->
+<div id="page-si-buy" class="page">
+  <div class="fc">
+    <div class="st">SI 매입 등록</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">매입처 *</label><input class="fi" id="sibv"></div>
+      <div class="fg"><label class="fl">연결 프로젝트</label><select class="fi" id="sibpr"></select></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">발행일</label><input class="fi" id="sibdt" type="date"></div>
+      <div class="fg"><label class="fl">공급가 (원)</label><input class="fi" id="sibam" type="text" placeholder="0" oninput="fmtI(this)"></div>
+      <div class="fg"><label class="fl">분류</label><select class="fi" id="sibcat"><option>용역</option><option>상품</option><option>프리랜서</option></select></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addSIBuy()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>발행일</th><th>매입처</th><th>프로젝트</th><th>분류</th><th style="text-align:right">공급가</th></tr></thead><tbody id="tb-sibuy"></tbody></table></div>
+</div>
+
+<!-- SE 계약 -->
+<div id="page-se-cont" class="page">
+  <div class="fc">
+    <div class="st">SE 계약 등록</div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">Job Code (CSAAA01)</label><input class="fi" id="sec" placeholder="CSAAA01"></div>
+      <div class="fg"><label class="fl">거래처 *</label><select class="fi" id="sea"></select></div>
+      <div class="fg"><label class="fl">계약명 *</label><input class="fi" id="sen"></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">시작일</label><input class="fi" id="ses" type="date"></div>
+      <div class="fg"><label class="fl">종료일</label><input class="fi" id="see" type="date"></div>
+      <div class="fg"><label class="fl">청구주기</label><select class="fi" id="secy"><option value="monthly">월별</option><option value="quarter">분기별</option><option value="half">반기별</option><option value="annual">연간</option></select></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">1회 금액 (원)</label><input class="fi" id="seam" type="text" placeholder="0" oninput="fmtI(this)"></div>
+      <div class="fg"><label class="fl">청구일 (n일)</label><input class="fi" id="sebd" type="number" value="25" min="1" max="28"></div>
+      <div class="fg"><label class="fl">발행방식</label><select class="fi" id="seim"><option>홈택스</option><option>나라빌</option><option>역발행</option><option>검수후발행</option></select></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addSECont()">등록 + 청구예정 자동생성</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>코드</th><th>거래처</th><th>계약명</th><th>주기</th><th>발행방식</th><th>상태</th><th style="text-align:right">1회금액</th><th>종료일</th><th>D-day</th><th>소급</th></tr></thead><tbody id="tb-sec"></tbody></table></div>
+</div>
+
+<!-- SE 청구 -->
+<div id="page-se-bill" class="page">
+  <div class="card">
+    <div class="ch">
+      <div class="ct">SE 청구 목록</div>
+      <select class="fsel" id="se-fstat" onchange="renderSEBill()"><option value="">전체</option><option>미발행</option><option>검수대기</option><option>발행완료</option><option>입금완료</option></select>
+    </div>
+    <table><thead><tr><th>거래처</th><th>계약명</th><th>유형</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th><th>액션</th></tr></thead><tbody id="tb-seb"></tbody></table>
   </div>
 </div>
 
-<!-- 세금계산서번호 모달 -->
-<div class="modal-bg" id="invno-modal">
-  <div class="modal" style="width:380px">
-    <div class="modal-title">세금계산서 번호 입력</div>
-    <div class="fg"><label class="flbl">세금계산서 번호</label><input class="inv-no-input" id="invno-input" placeholder="예: 20260515-1234567"></div>
-    <div class="modal-footer"><button class="btn btn-g" onclick="closeModal('invno-modal')">취소</button><button class="btn btn-p" onclick="saveInvNo()">저장</button></div>
+<!-- SE 매입 -->
+<div id="page-se-buy" class="page">
+  <div class="fc">
+    <div class="st">SE 매입 등록</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">매입처 *</label><input class="fi" id="sebv"></div>
+      <div class="fg"><label class="fl">연결 계약</label><select class="fi" id="sebco"></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">발행일</label><input class="fi" id="sebdt" type="date"></div>
+      <div class="fg"><label class="fl">공급가 (원)</label><input class="fi" id="sebam" type="text" placeholder="0" oninput="fmtI(this)"></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addSEBuy()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>발행일</th><th>매입처</th><th>계약</th><th style="text-align:right">공급가</th></tr></thead><tbody id="tb-sebuy"></tbody></table></div>
+</div>
+
+<!-- 단품 매출 -->
+<div id="page-pd-sale" class="page">
+  <div class="fc">
+    <div class="st">단품 매출 등록</div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">Job Code (CXAAA01)</label><input class="fi" id="pdc" placeholder="CXAAA01"></div>
+      <div class="fg"><label class="fl">거래처 *</label><select class="fi" id="pda"></select></div>
+      <div class="fg"><label class="fl">상품명 *</label><input class="fi" id="pdn"></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">수량</label><input class="fi" id="pdq" type="number" value="1"></div>
+      <div class="fg"><label class="fl">단가 (원)</label><input class="fi" id="pdp" type="text" placeholder="0" oninput="fmtI(this)"></div>
+      <div class="fg"><label class="fl">매출일</label><input class="fi" id="pdd" type="date"></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addPdSale()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>코드</th><th>매출일</th><th>거래처</th><th>상품명</th><th style="text-align:center">수량</th><th style="text-align:right">단가</th><th style="text-align:right">합계</th></tr></thead><tbody id="tb-pds"></tbody></table></div>
+</div>
+
+<!-- 단품 매입 -->
+<div id="page-pd-buy" class="page">
+  <div class="fc">
+    <div class="st">단품 매입 등록</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">매입처 *</label><input class="fi" id="pdbv"></div>
+      <div class="fg"><label class="fl">발행일</label><input class="fi" id="pdbdt" type="date"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">공급가 (원)</label><input class="fi" id="pdbam" type="text" placeholder="0" oninput="fmtI(this)"></div>
+      <div class="fg"><label class="fl">메모</label><input class="fi" id="pdbno"></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addPdBuy()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>발행일</th><th>매입처</th><th style="text-align:right">공급가</th><th>메모</th></tr></thead><tbody id="tb-pdb"></tbody></table></div>
+</div>
+
+<!-- 제경비 -->
+<div id="page-exp" class="page">
+  <div class="fc">
+    <div class="st">제경비 등록</div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">분류</label><select class="fi" id="excat"><option>급여</option><option>경비</option><option>기타</option></select></div>
+      <div class="fg"><label class="fl">발생일</label><input class="fi" id="exdt" type="date"></div>
+      <div class="fg"><label class="fl">금액 (원)</label><input class="fi" id="exam" type="text" placeholder="0" oninput="fmtI(this)"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">내용</label><input class="fi" id="exno" placeholder="항목 설명"></div>
+      <div class="fg" style="justify-content:flex-end;padding-top:18px"><button class="btn bp" onclick="addExp()">등록</button></div>
+    </div>
+  </div>
+  <div class="card"><table><thead><tr><th>발생일</th><th>분류</th><th>내용</th><th style="text-align:right">금액</th></tr></thead><tbody id="tb-exp"></tbody></table></div>
+</div>
+
+<!-- 세금계산서 -->
+<div id="page-tax" class="page">
+  <div class="fc" style="margin-bottom:12px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select class="fsel" id="tx-yr"><option>2025</option><option selected>2026</option><option>2027</option></select>
+      <select class="fsel" id="tx-mo"><option value="0">전체월</option></select>
+      <select class="fsel" id="tx-ty"><option value="">전체구분</option><option>SI</option><option>SE</option><option>단품</option></select>
+      <select class="fsel" id="tx-st"><option value="">전체상태</option><option>미발행</option><option>검수대기</option><option>발행완료</option><option>입금완료</option></select>
+      <button class="btn bg sm" onclick="renderTax()">조회</button>
+    </div>
+  </div>
+  <div class="card"><table><thead><tr><th>거래처</th><th>구분</th><th>건명</th><th>발행방식</th><th>예정일</th><th style="text-align:right">공급가</th><th style="text-align:right">VAT</th><th>상태</th><th>계산서번호</th><th>액션</th></tr></thead><tbody id="tb-tax"></tbody></table></div>
+</div>
+
+<!-- 거래처 -->
+<div id="page-acc" class="page">
+  <div class="fc">
+    <div class="st">거래처 등록</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">상호 *</label><input class="fi" id="acn"></div>
+      <div class="fg"><label class="fl">사업자번호</label><input class="fi" id="acb" placeholder="000-00-00000"></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">담당자</label><input class="fi" id="acc2"></div>
+      <div class="fg"><label class="fl">전화번호</label><input class="fi" id="acp"></div>
+      <div class="fg"><label class="fl">구분</label><select class="fi" id="act"><option>SI</option><option>SE</option><option>혼합</option></select></div>
+    </div>
+    <div class="tr"><button class="btn bp" onclick="addAcc()">등록</button></div>
+  </div>
+  <div class="card"><table><thead><tr><th>상호</th><th>구분</th><th>담당자</th><th>전화번호</th><th>사업자번호</th></tr></thead><tbody id="tb-acc"></tbody></table></div>
+</div>
+
+<!-- 계산서번호 모달 -->
+<div id="invno-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:20px 24px;width:360px">
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px">세금계산서 번호 입력</div>
+    <input class="fi" id="invno-in" placeholder="예: 20260515-1234567">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button class="btn bg sm" onclick="closeInvNo()">취소</button>
+      <button class="btn bp sm" onclick="saveInvNo()">저장</button>
+    </div>
+  </div>
+</div>
+
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-// ── Supabase 초기화 ──────────────────────────────────────────
-const SUPA_URL = 'https://tzzxovozicocpufuzcpa.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6enhvdm96aWNvY3B1ZnV6Y3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNjkwNzEsImV4cCI6MjA5NDc0NTA3MX0.n4_9Gstq1VKjekbde27kS562qx-iIzydvZrwudNtIk8';
-if(typeof supabase === 'undefined'){ alert('Supabase 라이브러리 로드 실패. 새로고침해주세요.'); }
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const SU='https://tzzxovozicocpufuzcpa.supabase.co';
+const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6enhvdm96aWNvY3B1ZnV6Y3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNjkwNzEsImV4cCI6MjA5NDc0NTA3MX0.n4_9Gstq1VKjekbde27kS562qx-iIzydvZrwudNtIk8';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6enhvdm96aWNvY3B1ZnV6Y3BhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE2OTA3MSwiZXhwIjoyMDk0NzQ1MDcxfQ.pM1bBu7xQTdP8G1W1Q2EttZyMSgr8TWMdIs9gWKXcfU';
+const sbA=supabase.createClient(SU,AK);
+const sb=supabase.createClient(SU,SK);
+const today=new Date(),iso=d=>d.toISOString().split('T')[0],tod=iso(today);
+let barC=null,invId=null,invCb=null,kd={sale:{all:0,si:0,se:0,pd:0},buy:{all:0,si:0,se:0,exp:0}};
+const CL={monthly:'월별',quarter:'분기별',half:'반기별',annual:'연간'};
+const NXT={'미발행':'검수대기','검수대기':'발행완료','발행완료':'입금완료'};
+const parseA=v=>parseInt((v||'0').toString().replace(/,/g,''))||0;
+const fmtA=n=>n?n.toLocaleString():'0';
+function fmtI(el){const v=parseA(el.value);el.value=v?v.toLocaleString():'';}
+const fmt=n=>{if(!n)return '0';const a=Math.abs(n);if(a>=100000000)return(n/100000000).toFixed(1)+'억';if(a>=10000)return Math.floor(n/10000).toLocaleString()+'만';return n.toLocaleString()};
+const bdg=s=>{const m={'미발행':'br','검수대기':'bo','발행완료':'by','입금완료':'bg2','유효':'bg2','해지예정':'br','만료':'br'};return`<span class="bdg ${m[s]||'bb'}">${s}</span>`};
+const noD=n=>`<tr><td colspan="${n}" class="nodata">데이터 없음</td></tr>`;
+Chart.defaults.font.family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
 
-const today = new Date();
-const iso = d => d.toISOString().split('T')[0];
-const todayStr = iso(today);
-const KF = "'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
-Chart.defaults.font.family = KF;
-
-// ── 현재 사용자 정보 ────────────────────────────────────────
-let currentUser = null;
-let currentProfile = null;
-let invnoPendingId = null, invnoPendingCb = null;
-let barInst = null;
-const dInst = {};
-
-const CYCLE_LBL = {monthly:'월별',quarter:'분기별',half:'반기별',annual:'연간'};
-const ISSUE_BDG = {홈택스:'b-blue',나라빌:'b-cyan',역발행:'b-purple',검수후발행:'b-orange'};
-const KANBAN_STAGES = ['영업제안','협상중','수주확정','진행중','검수','완료'];
-const STAGE_CLR = {'영업제안':'#94a3b8','협상중':'#f59e0b','수주확정':'#4361ee','진행중':'#10b981','검수':'#8b5cf6','완료':'#64748b'};
-const RENEW_STEPS = ['갱신대상확인','협의중','견적발송','계약완료','해지확정'];
-const NXT = {'미발행':'검수대기','검수대기':'발행완료','발행완료':'입금완료'};
-
-// KPI 탭 데이터 저장
-let kpiData = {
-  sales: {all:0, si:0, se:0, prod:0},
-  buy:   {all:0, si:0, se:0, prod:0, exp:0}
-};
-
-function switchKpi(card, type, el) {
-  // 탭 활성화
-  const parent = el.closest('.kpi-tabs');
-  parent.querySelectorAll('.kpi-tab').forEach(t => {
-    t.classList.remove('on');
-    t.style.background = '';
-    t.style.borderColor = '';
-    t.style.color = '';
-  });
-  el.classList.add('on');
-  const colors = {
-    sales: {all:'#4361ee', si:'#4361ee', se:'#06b6d4', prod:'#10b981'},
-    buy:   {all:'#ef4444', si:'#4361ee', se:'#06b6d4', prod:'#10b981', exp:'#fb923c'}
-  };
-  el.style.background = colors[card][type];
-  el.style.borderColor = colors[card][type];
-  el.style.color = '#fff';
-
-  // 값 업데이트
-  const labels = {
-    sales: {all:'전체', si:'SI', se:'SE', prod:'단품'},
-    buy:   {all:'전체', si:'SI 매입', se:'SE 매입', prod:'단품 매입', exp:'제경비'}
-  };
-  if(card === 'sales') {
-    document.getElementById('k-sales-val').textContent = fmt(kpiData.sales[type]);
-    document.getElementById('k-sales-sub').textContent = labels.sales[type];
-  } else {
-    document.getElementById('k-buy-val').textContent = fmt(kpiData.buy[type]);
-    document.getElementById('k-buy-sub').textContent = labels.buy[type];
-  }
-}
-
-// ── 유틸 ────────────────────────────────────────────────────
-const fmt = n => {if(!n||n===0)return '0';const a=Math.abs(n);if(a>=100000000)return (n/100000000).toFixed(1)+'억';if(a>=10000)return Math.floor(n/10000).toLocaleString()+'만';return n.toLocaleString()};
-const bdg = s => {const m={'미발행':'b-red','검수대기':'b-orange','발행완료':'b-yellow','입금완료':'b-green','유효':'b-green','갱신협의중':'b-yellow','해지예정':'b-red','만료':'b-red','진행중':'b-blue','착수':'b-blue','검수':'b-yellow','완료':'b-gray','수주확정':'b-green','협상중':'b-yellow','영업제안':'b-gray'};return `<span class="bdg ${m[s]||'b-blue'}">${s}</span>`};
-const ibdg = t => `<span class="bdg ${ISSUE_BDG[t]||'b-gray'}" style="font-size:9px">${t||'-'}</span>`;
-const avC = n => {const c=[['#eff6ff','#1d4ed8'],['#f0fff4','#166534'],['#fef9c3','#854d0e'],['#fff0f0','#c53030'],['#f5f3ff','#6d28d9']];return c[n.charCodeAt(0)%c.length]};
-const av = n => {const[bg,c]=avC(n);return `<div class="av" style="background:${bg};color:${c}">${n.replace(/[(주)]/g,'').trim().slice(0,2)}</div>`};
-const ttag = t => ({SI:'<span class="ttag tsi">SI</span>',SE:'<span class="ttag tse">SE</span>','단품':'<span class="ttag tpr">단품</span>'}[t]||t);
-const noData = n => `<tr><td colspan="${n}" style="text-align:center;color:#94a3b8;padding:20px">데이터가 없습니다</td></tr>`;
-const alink = (fn,fu) => fn&&fu ? `<a class="attach-link" href="${fu}" target="_blank">📎 ${fn}</a>` : '<span style="color:#e2e8f0">-</span>';
-const isoNow = () => todayStr;
-
-function toggleAttach(p){const dt=document.getElementById(`${p}-doctype`);const a=document.getElementById(`${p}-attach`);if(a)a.style.display=dt&&dt.value?'block':'none';}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
-document.querySelectorAll('.modal-bg').forEach(el=>el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')}));
-
-// ── 권한 체크 ────────────────────────────────────────────────
-const canEdit = () => ['admin','manager','sales'].includes(currentProfile?.role);
-const canAdmin = () => currentProfile?.role === 'admin';
-const canViewAll = () => ['admin','manager'].includes(currentProfile?.role);
-
-function applyPermissions(){
-  const role = currentProfile?.role || 'viewer';
-  // 사용자 관리 메뉴 (admin만)
-  document.getElementById('nav-users').style.display = canAdmin() ? 'block' : 'none';
-  // 수정 버튼들 viewer이면 숨김
-  if(!canEdit()){
-    document.querySelectorAll('.btn-p').forEach(b=>{b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';});
-  }
-  // 헤더 역할 뱃지
-  const roleEl = document.getElementById('header-role');
-  const roleClass = {admin:'role-admin',manager:'role-manager',sales:'role-sales',viewer:'role-viewer'}[role]||'role-viewer';
-  const roleLabel = {admin:'관리자',manager:'매니저',sales:'영업',viewer:'열람'}[role]||role;
-  roleEl.textContent = roleLabel;
-  roleEl.className = `header-role ${roleClass}`;
-}
-
-// ── 로그인 ───────────────────────────────────────────────────
+// 로그인
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-pw').value;
-  const btn = document.getElementById('login-btn');
-  const err = document.getElementById('login-err');
-  if(!email||!pw){err.textContent='이메일과 비밀번호를 입력하세요';return;}
-  btn.disabled=true; btn.textContent='로그인 중...'; err.textContent='';
-  try {
-    const {data,error} = await sb.auth.signInWithPassword({email,password:pw});
-    if(error){
-      err.textContent = error.message.includes('Invalid') ? '이메일 또는 비밀번호가 올바르지 않습니다' : error.message;
-      btn.disabled=false; btn.textContent='로그인';
-      return;
-    }
-    await initApp(data.user);
-  } catch(e) {
-    err.textContent = '연결 오류: ' + e.message;
-    console.error('로그인 오류:', e);
-    btn.disabled=false; btn.textContent='로그인';
-  }
+  const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value;
+  const b=document.getElementById('lbtn'),er=document.getElementById('lerr');
+  if(!e||!p){er.textContent='이메일과 비밀번호를 입력하세요';return;}
+  b.disabled=true;b.textContent='로그인 중...';er.textContent='';
+  try{
+    const {data,error}=await sbA.auth.signInWithPassword({email:e,password:p});
+    if(error){er.textContent='이메일 또는 비밀번호 오류';b.disabled=false;b.textContent='로그인';return;}
+    startApp();
+  }catch(e2){er.textContent='연결 오류';b.disabled=false;b.textContent='로그인';}
 }
-
-async function initApp(user){
-  currentUser = user;
-  try {
-    const {data:profile} = await sb.from('hkcloud_profiles').select('*').eq('id',user.id).single();
-    currentProfile = profile;
-    if(!profile || !profile.role){
-      await sb.from('hkcloud_profiles').upsert({
-        id:user.id, email:user.email,
-        name:user.email.split('@')[0], role:'admin'
-      },{onConflict:'id'});
-      currentProfile = {id:user.id, email:user.email, name:user.email.split('@')[0], role:'admin'};
-    }
-  } catch(e){
-    currentProfile = {id:user.id, email:user.email, name:user.email, role:'viewer'};
-    console.warn('프로필 조회 오류:', e);
-  }
-  document.getElementById('login-screen').style.display = 'none';
+async function startApp(){
+  document.getElementById('login-screen').style.display='none';
   document.getElementById('app').classList.add('show');
-  document.getElementById('header-user').textContent = currentProfile?.name || user.email;
-  try { applyPermissions(); } catch(e){ console.warn('applyPermissions:', e); }
-  try { await fillAll(); } catch(e){ console.warn('fillAll:', e); }
-  try { await renderDash(); } catch(e){ console.warn('renderDash:', e); }
-  try { setupRealtime(); } catch(e){ console.warn('realtime:', e); }
+  await fillDrops();
+  renderDash();
 }
-
 async function doLogout(){
-  supabase_realtime_cleanup();
-  await sb.auth.signOut();
-  currentUser = null; currentProfile = null;
+  await sbA.auth.signOut();
   document.getElementById('app').classList.remove('show');
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('login-email').value='';
-  document.getElementById('login-pw').value='';
+  document.getElementById('login-screen').style.display='flex';
 }
-
-function showForgot(){document.getElementById('login-form').style.display='none';document.getElementById('forgot-form').style.display='block';}
-function showLogin(){document.getElementById('forgot-form').style.display='none';document.getElementById('login-form').style.display='block';}
-
-async function doForgot(){
-  const email = document.getElementById('forgot-email').value.trim();
-  if(!email){document.getElementById('forgot-msg').textContent='이메일을 입력하세요';return;}
-  const {error} = await sb.auth.resetPasswordForEmail(email);
-  document.getElementById('forgot-msg').textContent = error ? error.message : '재설정 메일을 보냈습니다. 받은편지함을 확인하세요.';
-  document.getElementById('forgot-msg').style.color = error ? '#ef4444' : '#10b981';
-}
-
-
-// ── 실시간 반영 (Supabase Realtime) ──────────────────────────
-let realtimeChannel = null;
-function setupRealtime(){
-  if(realtimeChannel) supabase_realtime_cleanup();
-  realtimeChannel = sb.channel('hkcloud-changes')
-    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_billings'},()=>{
-      const activePage = document.querySelector('.page.active')?.id;
-      if(activePage==='page-dashboard') renderDash();
-      if(activePage==='page-tax') renderTax();
-      if(activePage==='page-si-sales') renderSISales();
-      if(activePage==='page-se-sales') renderSESales();
-      if(activePage==='page-closing') renderClosing();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_accounts'},()=>{
-      const activePage = document.querySelector('.page.active')?.id;
-      if(activePage==='page-accounts') renderAcc();
-      fillAll();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_si_projects'},()=>{
-      const activePage = document.querySelector('.page.active')?.id;
-      if(activePage==='page-si-project') renderSIProject();
-      if(activePage==='page-si-kanban') renderKanban();
-      if(activePage==='page-si-pnl') renderPnL();
-      fillAll();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'hkcloud_se_contracts'},()=>{
-      const activePage = document.querySelector('.page.active')?.id;
-      if(activePage==='page-se-contract') renderSEContract();
-      if(activePage==='page-se-renew') renderSERenew();
-      fillAll();
-    })
-    .subscribe();
-}
-function supabase_realtime_cleanup(){
-  if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel=null; }
-}
-
-// 세션 복원 및 유지
-// 페이지 로드 시 세션 확인 (단일 진입점)
 (async()=>{
-  const {data:{session}} = await sb.auth.getSession();
-  if(session?.user){
-    await initApp(session.user);
-  }
+  const {data:{session}}=await sbA.auth.getSession();
+  if(session)startApp();
 })();
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 
-// 세션 변경 감지 (로그아웃, 토큰 갱신만 처리)
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='SIGNED_OUT'){
-    currentUser=null; currentProfile=null;
-    document.getElementById('app').classList.remove('show');
-    document.getElementById('login-screen').style.display='flex';
-  }
-  if(event==='TOKEN_REFRESHED' && session?.user){
-    currentUser=session.user;
-  }
-});
-
-// ── 영업담당 (DB) ─────────────────────────────────────────────
-async function getReps(){
-  try {
-    const {data} = await sb.from('hkcloud_settings').select('value').eq('key','sales_reps').single();
-    return data?.value || ['이영업','김영업','박영업'];
-  } catch { return ['이영업','김영업','박영업']; }
-}
-
-// ── fillAll ──────────────────────────────────────────────────
-async function fillAll(){
-  const {data:accs} = await sb.from('hkcloud_accounts').select('id,name').order('name');
-  const {data:pjs}  = await sb.from('hkcloud_si_projects').select('id,code,account_name,name').order('name');
-  const {data:ses}  = await sb.from('hkcloud_se_contracts').select('id,account_name,name').order('name');
-  const reps = await getReps();
-
-  ['si-acc','se-acc','pd-acc'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    el.innerHTML=(accs||[]).map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-  });
-  ['sis-proj','sip-proj'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    const blank=id==='sip-proj'?'<option value="">없음</option>':'';
-    el.innerHTML=blank+(pjs||[]).map(p=>`<option value="${p.id}">${p.code?'['+p.code+'] ':''} ${p.account_name} — ${p.name}</option>`).join('');
-  });
-  ['ses-cont','sep-cont'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    const blank=id==='sep-cont'?'<option value="">없음</option>':'';
-    el.innerHTML=blank+(ses||[]).map(s=>`<option value="${s.id}">${s.account_name} — ${s.name}</option>`).join('');
-  });
-  ['si-rep','se-rep','ac-rep','sr-rep','sip-frep','sis-frep','sec-frep','ses-frep','tx-rep','pnl-frep'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    const isF=id.includes('frep')||['sr-rep','tx-rep'].includes(id);
-    const cur=el.value;
-    el.innerHTML=(isF?'<option value="">전체 담당</option>':'')+reps.map(r=>`<option value="${r}">${r}</option>`).join('');
-    if(cur)el.value=cur;
-  });
-}
-
-// ── 페이지 전환 ──────────────────────────────────────────────
-const TITLES = {dashboard:'대시보드','si-kanban':'SI 프로젝트 현황','si-project':'SI 프로젝트 등록','si-sales':'SI 청구 · 매출','si-purchase':'SI 매입','si-pnl':'SI 손익','se-contract':'SE 계약 관리','se-renew':'SE 갱신 관리','se-sales':'SE 청구 · 매출','se-purchase':'SE 매입','prod-sales':'단품 매출','prod-purchase':'단품 매입',tax:'세금계산서',closing:'월 마감',accounts:'거래처','sales-rep':'영업담당별 현황',users:'사용자 관리',settings:'설정'};
-const RENDERS = {dashboard:renderDash,'si-kanban':renderKanban,'si-project':renderSIProject,'si-sales':()=>{initBillLines();renderSISales()},'si-purchase':renderSIPurchase,'si-pnl':renderPnL,'se-contract':renderSEContract,'se-renew':renderSERenew,'se-sales':renderSESales,'se-purchase':renderSEPurchase,'prod-sales':renderProd,'prod-purchase':renderPB,tax:renderTax,closing:renderClosing,accounts:renderAcc,'sales-rep':renderSalesRep,users:()=>{loadUsers();},settings:renderSettings};
+// 페이지 전환
+const TITLES={'dash':'대시보드','si-proj':'SI 프로젝트 등록','si-bill':'SI 청구·매출','si-buy':'SI 매입','se-cont':'SE 계약 관리','se-bill':'SE 청구·매출','se-buy':'SE 매입','pd-sale':'단품 매출','pd-buy':'단품 매입','exp':'제경비','tax':'세금계산서','acc':'거래처'};
+const RENDERS={'dash':renderDash,'si-proj':renderSIProj,'si-bill':()=>renderSIBill(),'si-buy':renderSIBuyList,'se-cont':renderSECont,'se-bill':()=>renderSEBill(),'se-buy':renderSEBuyList,'pd-sale':renderPdSale,'pd-buy':renderPdBuy,'exp':renderExp,'tax':renderTax,'acc':renderAcc};
 function go(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
-  document.querySelectorAll('.nav-item,.nav-sub').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  document.querySelectorAll('.sn,.sdash').forEach(n=>n.classList.remove('active'));
   if(el)el.classList.add('active');
   document.getElementById('ptitle').textContent=TITLES[id]||id;
-  document.getElementById('topfilters').style.display=id==='dashboard'?'flex':'none';
+  // 대시보드 벗어나면 donut 초기화
+  if(id!=='dash' && window.donutC){window.donutC.destroy();window.donutC=null;}
   if(RENDERS[id])RENDERS[id]();
 }
 
-// ── 도넛 차트 ───────────────────────────────────────────────
-function mkD(id,vals,colors){if(dInst[id])dInst[id].destroy();const el=document.getElementById(id);if(!el)return;dInst[id]=new Chart(el,{type:'doughnut',data:{datasets:[{data:vals,backgroundColor:colors,borderWidth:0,hoverOffset:2}]},options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:300}}})}
-
-// ── 배너 ──────────────────────────────────────────────────────
-async function renderBanner(){
-  const {data:bills} = await sb.from('hkcloud_billings').select('*').lte('bill_date',todayStr).in('status',['미발행','검수대기']);
-  const next7=new Date(today);next7.setDate(next7.getDate()+7);
-  const {data:upcoming} = await sb.from('hkcloud_billings').select('*').eq('status','미발행').gt('bill_date',todayStr).lte('bill_date',iso(next7));
-  const el=document.getElementById('alert-banner');if(!el)return;
-  let html='';
-  if(bills?.length){
-    const seO=bills.filter(b=>b.source_type==='SE');const siO=bills.filter(b=>b.source_type==='SI');
-    html+=`<div class="alert-banner ab-red"><div style="font-size:18px;flex-shrink:0">🚨</div><div style="flex:1"><div style="font-weight:700;margin-bottom:3px">발행 기한 초과 또는 오늘 발행 예정 (${bills.length}건)</div>${seO.length?`<div class="banner-item">SE 유지보수 <b>${seO.length}건</b> — ${seO.map(b=>b.account_name).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</div>`:''} ${siO.length?`<div class="banner-item">SI 프로젝트 <b>${siO.length}건</b></div>`:''}<div style="margin-top:5px"><button class="btn btn-danger btn-sm" onclick="go('tax',null)">세금계산서 바로가기 →</button></div></div><span style="cursor:pointer;color:#991b1b;font-size:14px" onclick="this.closest('.alert-banner').remove()">✕</span></div>`;
-  }
-  if(upcoming?.length){
-    html+=`<div class="alert-banner ab-yellow"><div style="font-size:18px;flex-shrink:0">📋</div><div style="flex:1"><div style="font-weight:700;margin-bottom:3px">이번 주 발행 예정 (${upcoming.length}건)</div>${upcoming.slice(0,4).map(b=>`<div class="banner-item">${b.bill_date?.slice(5)} ${b.account_name} — ${(b.source_name||'').slice(0,12)} ${fmt(b.amount)}만</div>`).join('')}</div><span style="cursor:pointer;color:#92400e;font-size:14px" onclick="this.closest('.alert-banner').remove()">✕</span></div>`;
-  }
-  el.innerHTML=html;
+// 드롭다운 채우기
+async function fillDrops(){
+  const {data:accs=[]}=await sb.from('hkcloud_accounts').select('id,name').order('name');
+  const {data:pjs=[]}=await sb.from('hkcloud_si_projects').select('id,code,account_name,name').order('name');
+  const {data:ses=[]}=await sb.from('hkcloud_se_contracts').select('id,account_name,name').order('name');
+  ['sia','sea','pda'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=accs.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');});
+  const pOpt=pjs.map(p=>`<option value="${p.id}">${p.code?'['+p.code+'] ':''} ${p.account_name} — ${p.name}</option>`).join('');
+  ['sibp','sibpr'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=(id==='sibpr'?'<option value="">없음</option>':'')+pOpt;});
+  const sOpt=ses.map(s=>`<option value="${s.id}">${s.account_name} — ${s.name}</option>`).join('');
+  ['sebco'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">없음</option>'+sOpt;});
 }
 
-// ── 대시보드 ─────────────────────────────────────────────────
+// 대시보드
 async function renderDash(){
-  await renderBanner();
-  const year = document.getElementById('f-year').value;
-  const view = document.getElementById('f-view').value;
-  const ftype = document.getElementById('f-type').value;
-  const curYM = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  const yr=today.getFullYear();
+  const ftype=document.getElementById('f-type')?.value||'';
+  const fmonth=document.getElementById('f-month')?.value||'';
+  const fproj=document.getElementById('f-proj')?.value||'';
+  const fstatus=document.getElementById('f-status')?.value||'';
 
-  let q = sb.from('hkcloud_billings').select('source_type,bill_date,amount,vat,status,sales_rep').gte('bill_date',`${curYM}-01`).lte('bill_date',`${curYM}-31`);
-  const {data:curBils=[]} = await q;
+  // 프로젝트 필터 드롭다운 채우기 (SI 프로젝트 + 단품, SE는 통합)
+  const {data:siProjs=[]}=await sb.from('hkcloud_si_projects').select('id,name,account_name,stage').order('name');
+  const {data:pdProjs=[]}=await sb.from('hkcloud_prod_sales').select('id,name').order('name');
+  const fp=document.getElementById('f-proj');
+  if(fp){
+    const cur=fp.value;
+    fp.innerHTML='<option value="">전체</option>'
+      +'<optgroup label="SI">'+siProjs.map(p=>`<option value="si-${p.id}">${p.account_name} — ${p.name}</option>`).join('')+'</optgroup>'
+      +'<optgroup label="단품">'+[...new Map(pdProjs.map(p=>[p.name,p])).values()].map(p=>`<option value="pd-${p.name}">${p.name}</option>`).join('')+'</optgroup>'
+      +'<optgroup label="SE"><option value="se-all">SE 전체</option></optgroup>';
+    if(cur)fp.value=cur;
+  }
 
-  const siM = curBils.filter(b=>b.source_type==='SI').reduce((s,b)=>s+(b.amount||0)+(b.vat||0),0);
-  const seM = curBils.filter(b=>b.source_type==='SE').reduce((s,b)=>s+(b.amount||0)+(b.vat||0),0);
-  const prM = curBils.filter(b=>b.source_type==='단품').reduce((s,b)=>s+(b.amount||0)+(b.vat||0),0);
-  const notCnt = curBils.filter(b=>b.status==='미발행'||b.status==='검수대기').length;
+  // 기간 설정
+  let dateFrom=yr+'-01-01', dateTo=yr+'-12-31';
+  if(fmonth){const m=fmonth.replace('월','').padStart(2,'0');dateFrom=`${yr}-${m}-01`;dateTo=`${yr}-${m}-31`;}
 
-  const {data:sipData=[]} = await sb.from('hkcloud_si_purchases').select('amount,issue_date').gte('issue_date',`${curYM}-01`).lte('issue_date',`${curYM}-31`);
-  const {data:sepData=[]} = await sb.from('hkcloud_se_purchases').select('amount,issue_date').gte('issue_date',`${curYM}-01`).lte('issue_date',`${curYM}-31`);
-  const {data:expData=[]} = await sb.from('hkcloud_expenses').select('amount,expense_date').gte('expense_date',`${curYM}-01`).lte('expense_date',`${curYM}-31`);
-  const buyM = [...sipData,...sepData].reduce((s,p)=>s+(p.amount||0),0);
-  const expM = expData.reduce((s,e)=>s+(e.amount||0),0);
+  // billing 쿼리
+  let bq=sb.from('hkcloud_billings').select('*').gte('bill_date',dateFrom).lte('bill_date',dateTo);
+  if(ftype)bq=bq.eq('source_type',ftype);
+  const {data:bills=[]}=await bq;
 
-  const {data:sesCont=[]} = await sb.from('hkcloud_se_contracts').select('amount,cycle,status');
-  const mrr = sesCont.filter(s=>s.status==='유효'&&s.cycle==='monthly').reduce((s,c)=>s+(c.amount||0),0);
+  // 프로젝트/진행여부 필터 적용
+  let filtered=bills;
+  if(fproj){
+    if(fproj.startsWith('si-')){const pid=parseInt(fproj.replace('si-',''));filtered=filtered.filter(b=>b.source_type==='SI'&&b.source_id===pid);}
+    else if(fproj.startsWith('pd-')){const pnm=fproj.replace('pd-','');filtered=filtered.filter(b=>b.source_type==='단품'&&b.source_name===pnm);}
+    else if(fproj==='se-all')filtered=filtered.filter(b=>b.source_type==='SE');
+  }
+  if(fstatus==='active')filtered=filtered.filter(b=>b.status!=='입금완료');
+  else if(fstatus==='done')filtered=filtered.filter(b=>b.status==='입금완료');
 
-  // KPI 데이터 저장
-  kpiData.sales = {all:siM+seM+prM, si:siM, se:seM, prod:prM};
-  kpiData.buy   = {all:buyM+expM, si:sipData.reduce((s,p)=>s+(p.amount||0),0), se:sepData.reduce((s,p)=>s+(p.amount||0),0), prod:0, exp:expM};
+  // 매입/제경비
+  const [{data:sip=[]},{data:sep=[]},{data:pdp=[]},{data:exps=[]}]=await Promise.all([
+    sb.from('hkcloud_si_purchases').select('amount').gte('issue_date',dateFrom).lte('issue_date',dateTo),
+    sb.from('hkcloud_se_purchases').select('amount').gte('issue_date',dateFrom).lte('issue_date',dateTo),
+    sb.from('hkcloud_prod_purchases').select('amount').gte('issue_date',dateFrom).lte('issue_date',dateTo),
+    sb.from('hkcloud_expenses').select('amount').gte('expense_date',dateFrom).lte('expense_date',dateTo),
+  ]);
 
-  // 현재 활성 탭 기준으로 표시
-  const activeSalesTab = document.querySelector('.kpi-tabs .kpi-tab.on[onclick*="sales"]');
-  const activeBuyTab   = document.querySelector('.kpi-tabs .kpi-tab.on[onclick*="buy"]');
-  const salesType = activeSalesTab ? activeSalesTab.getAttribute('onclick').match(/'(\w+)'/g)?.[1]?.replace(/'/g,'') : 'all';
-  const buyType   = activeBuyTab   ? activeBuyTab.getAttribute('onclick').match(/'(\w+)'/g)?.[1]?.replace(/'/g,'') : 'all';
+  const totalSale=filtered.reduce((s,b)=>s+(b.amount||0)+(b.vat||0),0);
+  const totalBuy=sip.reduce((s,p)=>s+(p.amount||0),0)+sep.reduce((s,p)=>s+(p.amount||0),0)+pdp.reduce((s,p)=>s+(p.amount||0),0);
+  const totalExp=exps.reduce((s,e)=>s+(e.amount||0),0);
+  const pnl=totalSale-totalBuy-totalExp;
+  const niCnt=bills.filter(b=>b.status==='미발행'||b.status==='검수대기').length;
 
-  document.getElementById('k-sales-val').textContent = fmt(kpiData.sales[salesType]||kpiData.sales.all);
-  document.getElementById('k-buy-val').textContent   = fmt(kpiData.buy[buyType]||kpiData.buy.all);
-  document.getElementById('k-notissued').textContent = notCnt+'건';
+  document.getElementById('k-sale').textContent=fmtA(totalSale);
+  const pe=document.getElementById('k-pnl');
+  pe.textContent=(pnl>=0?'+':'')+fmtA(pnl);
+  pe.style.color=pnl>=0?'#10b981':'#ef4444';
+  document.getElementById('k-ni').textContent=niCnt+'건';
 
-  // 연간 데이터
-  let billQ = sb.from('hkcloud_billings').select('source_type,bill_date,amount,vat,status,sales_rep').gte('bill_date',`${year}-01-01`).lte('bill_date',`${year}-12-31`);
-  if(ftype) billQ = billQ.eq('source_type',ftype);
-  const {data:yBils=[]} = await billQ;
+  // 막대차트 (필터 반영)
+  const {data:yb=[]}=await sb.from('hkcloud_billings').select('source_type,bill_date,amount').gte('bill_date',yr+'-01-01').lte('bill_date',yr+'-12-31');
+  const {data:ybuy=[]}=await sb.from('hkcloud_si_purchases').select('amount,issue_date').gte('issue_date',yr+'-01-01').lte('issue_date',yr+'-12-31');
 
-  const {data:ySip=[]} = await sb.from('hkcloud_si_purchases').select('amount,issue_date').gte('issue_date',`${year}-01-01`).lte('issue_date',`${year}-12-31`);
-  const {data:ySep=[]} = await sb.from('hkcloud_se_purchases').select('amount,issue_date').gte('issue_date',`${year}-01-01`).lte('issue_date',`${year}-12-31`);
-  const {data:yExp=[]} = await sb.from('hkcloud_expenses').select('amount,expense_date,category').gte('expense_date',`${year}-01-01`).lte('expense_date',`${year}-12-31`);
+  const siY=yb.filter(b=>b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0);
+  const seY=yb.filter(b=>b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0);
+  const pdY=yb.filter(b=>b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0);
+  const buyY=ybuy.reduce((s,b)=>s+(b.amount||0),0);
 
-  // 막대 차트 데이터
-  let labels, siA, seA, prA, buA, exA;
-  if(view==='monthly'){
-    labels=[]; siA=[]; seA=[]; prA=[]; buA=[]; exA=[];
-    for(let m=1;m<=12;m++){
-      const ym=`${year}-${String(m).padStart(2,'0')}`;
-      labels.push(m+'월');
-      siA.push(Math.round(yBils.filter(b=>b.bill_date?.startsWith(ym)&&b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0)/10000));
-      seA.push(Math.round(yBils.filter(b=>b.bill_date?.startsWith(ym)&&b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0)/10000));
-      prA.push(Math.round(yBils.filter(b=>b.bill_date?.startsWith(ym)&&b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0)/10000));
-      buA.push(Math.round([...ySip,...ySep].filter(p=>p.issue_date?.startsWith(ym)).reduce((s,p)=>s+(p.amount||0),0)/10000));
-      exA.push(Math.round(yExp.filter(e=>e.expense_date?.startsWith(ym)).reduce((s,e)=>s+(e.amount||0),0)/10000));
+  const lbl=[],siA=[],seA=[],pdA=[],buA=[];
+  for(let m=1;m<=12;m++){
+    const p=`${yr}-${String(m).padStart(2,'0')}`;
+    lbl.push(m+'월');
+    siA.push(Math.round(yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0)/10000));
+    seA.push(Math.round(yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0)/10000));
+    pdA.push(Math.round(yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0)/10000));
+    buA.push(Math.round(ybuy.filter(b=>b.issue_date?.startsWith(p)).reduce((s,b)=>s+(b.amount||0),0)/10000));
+  }
+  if(barC)barC.destroy();
+  const bc=document.getElementById('barC');if(!bc)return;
+  barC=new Chart(bc,{type:'bar',data:{labels:lbl,datasets:[{label:'SI',data:siA,backgroundColor:'#4361ee',borderRadius:2},{label:'SE',data:seA,backgroundColor:'#06b6d4',borderRadius:2},{label:'단품',data:pdA,backgroundColor:'#10b981',borderRadius:2},{label:'매입',data:buA,backgroundColor:'#f87171',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},callback:v=>v+'만'}}},onClick:(e,els)=>{
+    if(els.length){
+      const mi=els[0].index;
+      const p=`${yr}-${String(mi+1).padStart(2,'0')}`;
+      const mSI=yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0);
+      const mSE=yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0);
+      const mPD=yb.filter(b=>b.bill_date?.startsWith(p)&&b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0);
+      updateDonut(mSI,mSE,mPD,siY+seY+pdY,(mi+1)+'월');
+    }else{
+      updateDonut(siY,seY,pdY,siY+seY+pdY,yr+'년');
     }
-  } else {
-    labels=['Q1','Q2','Q3','Q4'];
-    const qr=[[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
-    siA=qr.map(ms=>Math.round(ms.reduce((s,m)=>s+yBils.filter(b=>b.bill_date?.startsWith(`${year}-${String(m).padStart(2,'0')}`)&&b.source_type==='SI').reduce((a,b)=>a+(b.amount||0),0),0)/10000));
-    seA=qr.map(ms=>Math.round(ms.reduce((s,m)=>s+yBils.filter(b=>b.bill_date?.startsWith(`${year}-${String(m).padStart(2,'0')}`)&&b.source_type==='SE').reduce((a,b)=>a+(b.amount||0),0),0)/10000));
-    prA=qr.map(ms=>Math.round(ms.reduce((s,m)=>s+yBils.filter(b=>b.bill_date?.startsWith(`${year}-${String(m).padStart(2,'0')}`)&&b.source_type==='단품').reduce((a,b)=>a+(b.amount||0),0),0)/10000));
-    buA=qr.map(ms=>Math.round(ms.reduce((s,m)=>s+[...ySip,...ySep].filter(p=>p.issue_date?.startsWith(`${year}-${String(m).padStart(2,'0')}`)).reduce((a,p)=>a+(p.amount||0),0),0)/10000));
-    exA=qr.map(ms=>Math.round(ms.reduce((s,m)=>s+yExp.filter(e=>e.expense_date?.startsWith(`${year}-${String(m).padStart(2,'0')}`)).reduce((a,e)=>a+(e.amount||0),0),0)/10000));
+  }}});
+
+  updateDonut(siY,seY,pdY,siY+seY+pdY,yr+'년');
+  await renderDashBottom(bills);
+}
+
+function updateDonut(siV,seV,pdV,totSale,label){
+  // 구성비: 영업이익 / 매입비율 / 제경비비율
+  // 여기서는 SI/SE/단품 구성비로 표시
+  const tot=siV+seV+pdV||1;
+  const pct=v=>Math.round(v/tot*100);
+  const vals=[siV/10000||0.001,seV/10000||0.001,pdV/10000||0.001];
+  if(window.donutC&&window.donutC.data){
+    window.donutC.data.datasets[0].data=vals;
+    window.donutC.update();
+  }else{
+    const dc=document.getElementById('donutC');if(!dc)return;
+    window.donutC=new Chart(dc,{type:'doughnut',data:{datasets:[{data:vals,backgroundColor:['#4361ee','#06b6d4','#10b981'],borderWidth:0,hoverOffset:3}]},options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${['SI','SE','단품'][c.dataIndex]}: ${fmt(c.parsed*10000)}만원`}}},animation:{duration:300}}});
   }
+  document.getElementById('donut-total').textContent=fmt(tot);
+  document.getElementById('donut-yr').textContent=label;
+  document.getElementById('donut-legs').innerHTML=
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#4361ee;border-radius:1px;display:inline-block"></span>SI</span><span style="font-weight:600;color:#1a202c">${pct(siV)}%</span></div>`+
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#06b6d4;border-radius:1px;display:inline-block"></span>SE</span><span style="font-weight:600;color:#1a202c">${pct(seV)}%</span></div>`+
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#64748b"><span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:#10b981;border-radius:1px;display:inline-block"></span>단품</span><span style="font-weight:600;color:#1a202c">${pct(pdV)}%</span></div>`;
+}
 
-  if(barInst)barInst.destroy();
-  const bc = document.getElementById('barChart'); if(!bc)return;
-  barInst=new Chart(bc,{type:'bar',data:{labels,datasets:[{label:'SI',data:siA,backgroundColor:'#4361ee',borderRadius:3},{label:'SE',data:seA,backgroundColor:'#06b6d4',borderRadius:3},{label:'단품',data:prA,backgroundColor:'#10b981',borderRadius:3},{label:'매입',data:buA,backgroundColor:'#f87171',borderRadius:3},{label:'제경비',data:exA,backgroundColor:'#fb923c',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원`}}},scales:{x:{grid:{display:false},ticks:{font:{family:KF,size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:KF,size:10},callback:v=>v.toLocaleString()+'만'}}}}});
+// 미발행 팝업
+async function openNiPopup(){
+  const {data:rows=[]}=await sb.from('hkcloud_billings').select('*').in('status',['미발행','검수대기']).order('bill_date');
+  document.getElementById('ni-list').innerHTML=rows.length
+    ?'<table style="width:100%;font-size:12px;border-collapse:collapse">'+
+      '<thead><tr style="color:#94a3b8;border-bottom:1px solid #f1f5f9"><th style="padding:5px 8px;text-align:left">거래처</th><th>구분</th><th>예정일</th><th style="text-align:right">공급가</th><th>상태</th><th>액션</th></tr></thead><tbody>'+
+      rows.map(b=>`<tr style="border-bottom:1px solid #f8fafc"><td style="padding:7px 8px">${b.account_name||''}</td><td style="text-align:center"><span class="ttag ${b.source_type==='SI'?'tsi':b.source_type==='SE'?'tse':'tpr'}">${b.source_type}</span></td><td style="color:#94a3b8">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmtA(b.amount)}원</td><td>${bdg(b.status)}</td><td>${NXT[b.status]?`<button class="btn bg sm" onclick="chgSt(${b.id},'${NXT[b.status]}',()=>{openNiPopup();renderDash()})">→${NXT[b.status]}</button>`:'-'}</td></tr>`).join('')+
+      '</tbody></table>'
+    :'<div style="text-align:center;color:#94a3b8;padding:20px">미발행 건이 없습니다 ✅</div>';
+  document.getElementById('ni-popup').style.display='flex';
+}
 
-  // 도넛
-  const siY=yBils.filter(b=>b.source_type==='SI').reduce((s,b)=>s+(b.amount||0),0);
-  const seY=yBils.filter(b=>b.source_type==='SE').reduce((s,b)=>s+(b.amount||0),0);
-  const prY=yBils.filter(b=>b.source_type==='단품').reduce((s,b)=>s+(b.amount||0),0);
-  const siB=ySip.reduce((s,p)=>s+(p.amount||0),0);
-  const seB=ySep.reduce((s,p)=>s+(p.amount||0),0);
-  const expC={};yExp.forEach(e=>{expC[e.category]=(expC[e.category]||0)+(e.amount||0)});
-  const expT=Object.values(expC).reduce((s,v)=>s+v,0);
-  const sT=siY+seY+prY||1;
-  const pct=v=>sT>1?Math.round(v/sT*100):0;
-  mkD('d-sales',[siY/10000||1,seY/10000||1,prY/10000||1],['#4361ee','#06b6d4','#10b981']);
-  document.getElementById('d-sv').textContent=fmt(sT);
-  document.getElementById('d-sl').innerHTML=`<div class="d3l"><div style="display:flex;align-items:center;gap:3px"><div class="d3l-dot" style="background:#4361ee"></div>SI</div><div class="d3l-val">${pct(siY)}%</div></div><div class="d3l"><div style="display:flex;align-items:center;gap:3px"><div class="d3l-dot" style="background:#06b6d4"></div>SE</div><div class="d3l-val">${pct(seY)}%</div></div><div class="d3l"><div style="display:flex;align-items:center;gap:3px"><div class="d3l-dot" style="background:#10b981"></div>단품</div><div class="d3l-val">${pct(prY)}%</div></div>`;
-  mkD('d-buy',[siB/10000||1,seB/10000||1],['#f87171','#fca5a5']);
-  document.getElementById('d-bv').textContent=fmt(siB+seB);
-  document.getElementById('d-bl').innerHTML=`<div class="d3l"><div style="display:flex;align-items:center;gap:3px"><div class="d3l-dot" style="background:#f87171"></div>SI</div><div class="d3l-val">${fmt(siB)}만</div></div><div class="d3l"><div style="display:flex;align-items:center;gap:3px"><div class="d3l-dot" style="background:#fca5a5"></div>SE</div><div class="d3l-val">${fmt(seB)}만</div></div>`;
-  const eK=Object.keys(expC);const eC=['#fb923c','#fbbf24','#a78bfa','#34d399','#60a5fa'];
-  mkD('d-exp',eK.length?eK.map(k=>expC[k]/10000):[1],eK.length?eC.slice(0,eK.length):['#e2e8f0']);
-  document.getElementById('d-ev').textContent=fmt(expT);
-  document.getElementById('d-el').innerHTML=eK.slice(0,3).map((k,i)=>`<div class="d3l"><div style="display:flex;align-items:center;gap:3px"><div class="d3l-dot" style="background:${eC[i]}"></div>${k}</div><div class="d3l-val">${fmt(expC[k])}만</div></div>`).join('');
-
-  // 이번달 테이블
-  document.getElementById('tax-m-hint').textContent=`${today.getMonth()+1}월`;
-  document.getElementById('tbl-notissued').innerHTML=curBils.slice(0,8).map(b=>{
-    const nxt=NXT[b.status];
-    return `<tr><td><div class="acc-cell">${av(b.account_name||'')}<span>${b.account_name}</span></div></td><td>${ttag(b.source_type)}</td><td style="text-align:right;font-weight:600">${fmt(b.amount)}만</td><td style="color:#94a3b8">${b.bill_date?.slice(5)||''}</td><td>${bdg(b.status)}</td><td>${nxt&&canEdit()?`<button class="btn btn-g btn-sm" onclick="chgStat(${b.id},'${nxt}',renderDash)">→ ${nxt}</button>`:'<span style="color:#94a3b8;font-size:10px">${b.status==="입금완료"?"완료":"-"}</span>'}</td></tr>`;
-  }).join('')||noData(6);
-
-  // SE 갱신임박
+async function renderDashBottom(bills){
+  const cur=bills.filter(b=>b.bill_date?.startsWith(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`));
+  document.getElementById('tb-dash-tax').innerHTML=cur.slice(0,6).map(b=>`<tr><td>${b.account_name||''}</td><td><span class="ttag ${b.source_type==='SI'?'tsi':b.source_type==='SE'?'tse':'tpr'}">${b.source_type}</span></td><td style="text-align:right">${fmt(b.amount)}만</td><td style="color:#94a3b8;font-size:11px">${(b.bill_date||'').slice(5)}</td><td>${bdg(b.status)}</td><td>${NXT[b.status]?`<button class="btn bg sm" onclick="chgSt(${b.id},'${NXT[b.status]}',renderDash)">→${NXT[b.status]}</button>`:'-'}</td></tr>`).join('')||noD(6);
   const d90=new Date();d90.setDate(d90.getDate()+90);
-  const {data:renews=[]} = await sb.from('hkcloud_se_contracts').select('*').neq('status','만료').lte('end_date',iso(d90)).order('end_date');
-  document.getElementById('tbl-renew').innerHTML=renews.map(c=>{
-    const dl=Math.round((new Date(c.end_date)-today)/86400000);
-    const dc=dl<=30?'#ef4444':dl<=60?'#f59e0b':'#64748b';
-    return `<tr><td>${c.account_name}</td><td style="font-size:10px;color:#94a3b8">${(c.name||'').slice(0,14)}</td><td style="color:#94a3b8;font-size:10px">${c.end_date}</td><td style="font-weight:700;color:${dc}">D-${dl}</td><td><button class="btn btn-g btn-sm" onclick="go('se-renew',null)">갱신관리</button></td></tr>`;
-  }).join('')||noData(5);
+  const {data:rn=[]}=await sb.from('hkcloud_se_contracts').select('account_name,name,end_date').neq('status','만료').lte('end_date',iso(d90)).order('end_date');
+  document.getElementById('tb-dash-se').innerHTML=rn.map(c=>{const dl=Math.round((new Date(c.end_date)-today)/864e5);return`<tr><td>${c.account_name}</td><td style="font-size:12px;color:#94a3b8">${(c.name||'').slice(0,14)}</td><td style="font-size:12px;color:#94a3b8">${c.end_date}</td><td style="font-weight:700;color:${dl<=30?'#ef4444':dl<=60?'#f59e0b':'#64748b'}">D-${dl}</td></tr>`}).join('')||noD(4);
 }
 
-// ── 칸반 ─────────────────────────────────────────────────────
-let dragCardId = null;
-async function renderKanban(){
-  const {data:pjs=[]} = await sb.from('hkcloud_si_projects').select('*').order('created_at');
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('source_id,amount,status').eq('source_type','SI');
-  const board = document.getElementById('kanban-board');
-  board.innerHTML = KANBAN_STAGES.map(stage=>{
-    const cards = pjs.filter(p=>p.stage===stage);
-    return `<div class="kanban-col" data-stage="${stage}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropCard(event,'${stage}')">
-      <div class="kanban-col-title"><span>${stage}</span><span class="kanban-badge">${cards.length}</span></div>
-      ${cards.map(p=>{
-        const pb=bills.filter(b=>b.source_id===p.id);
-        const paid=pb.filter(b=>b.status==='입금완료').reduce((s,b)=>s+(b.amount||0),0);
-        const pct=p.amount?Math.round(paid/p.amount*100):0;
-        return `<div class="kanban-card" draggable="true" data-id="${p.id}" ondragstart="dragCardId=${p.id};this.classList.add('dragging')" onclick="showBillModal(${p.id},'${(p.name||'').replace(/'/g,'&apos;')}')">
-          <div class="kc-acc">${p.account_name||''}</div>
-          <div class="kc-name">${p.code?'['+p.code+'] ':''} ${p.name||''}</div>
-          <div class="kc-amt">${fmt(p.amount||0)}만원</div>
-          <div class="kc-date">📅 ${p.end_date||'미정'} · ${p.sales_rep||'-'}</div>
-          <div class="kc-bar-wrap"><div class="kc-bar-fill" style="width:${pct}%;background:${STAGE_CLR[stage]}"></div></div>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }).join('');
+// SI 프로젝트
+async function renderSIProj(){
+  await fillDrops();
+  const {data:pjs=[]}=await sb.from('hkcloud_si_projects').select('*').order('created_at',{ascending:false});
+  const {data:bl=[]}=await sb.from('hkcloud_billings').select('source_id,amount,status').eq('source_type','SI');
+  document.getElementById('tb-sip').innerHTML=pjs.map(p=>{
+    const paid=bl.filter(b=>b.source_id===p.id&&b.status==='입금완료').reduce((s,b)=>s+(b.amount||0),0);
+    return`<tr><td style="color:#4361ee;font-size:11px;font-weight:700">${p.code||'-'}</td><td>${p.account_name}</td><td style="font-weight:500">${p.name}</td><td style="font-size:12px;color:#94a3b8">${p.sales_rep||'-'}</td><td>${bdg(p.stage||'수주확정')}</td><td style="text-align:right">${fmt(p.amount||0)}만</td><td style="text-align:right;color:#10b981;font-weight:600">${fmt(paid)}만</td><td><button class="btn bg sm" onclick="showBills(${p.id},'${(p.name||'').replace(/'/g,'&#39;')}')">청구일정</button></td></tr>`;
+  }).join('')||noD(8);
 }
-async function dropCard(e,stage){
-  e.preventDefault();e.currentTarget.classList.remove('drag-over');
-  if(!dragCardId||!canEdit())return;
-  await sb.from('hkcloud_si_projects').update({stage}).eq('id',dragCardId);
-  dragCardId=null;renderKanban();
-}
-document.addEventListener('dragend',()=>{document.querySelectorAll('.kanban-card').forEach(c=>c.classList.remove('dragging'));document.querySelectorAll('.kanban-col').forEach(c=>c.classList.remove('drag-over'))});
-
-// ── SI 프로젝트 ───────────────────────────────────────────────
-async function renderSIProject(){
-  const rep=document.getElementById('sip-frep')?.value||'';
-  let q=sb.from('hkcloud_si_projects').select('*').order('created_at',{ascending:false});
-  if(rep)q=q.eq('sales_rep',rep);
-  const {data:pjs=[]} = await q;
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('source_id,amount,status').eq('source_type','SI');
-  document.getElementById('tbl-si-proj').innerHTML=pjs.map(p=>{
-    const pb=bills.filter(b=>b.source_id===p.id);
-    const pd=pb.filter(b=>b.status==='입금완료').reduce((s,b)=>s+(b.amount||0),0);
-    const pct=p.amount?Math.round(pd/p.amount*100):0;
-    return `<tr style="cursor:pointer" onclick="openSIPanel(${p.id})"><td style="font-size:10px;color:#4361ee;font-weight:700">${p.code||'-'}</td><td>${p.account_name||''}</td><td style="font-weight:500">${p.name||''}</td><td style="font-size:10px;color:#94a3b8">${p.sales_rep||'-'}</td><td style="font-size:10px;color:#94a3b8">${p.pm||'-'}</td><td>${bdg(p.stage||'영업제안')}</td><td style="text-align:right">${fmt(p.amount||0)}만</td><td style="text-align:right;color:#10b981;font-weight:600">${fmt(pd)}만</td><td><div class="pgw"><div class="pgf" style="background:#4361ee;width:${pct}%"></div></div> <span style="font-size:9px;color:#94a3b8">${pct}%</span></td><td onclick="event.stopPropagation()"><button class="btn btn-g btn-sm" onclick="showBillModal(${p.id},'${(p.name||'').replace(/'/g,'&apos;')}')">청구일정</button></td></tr>`;
-  }).join('')||noData(10);
-}
-async function addSIProject(){
-  if(!canEdit())return;
-  const nm=document.getElementById('si-name').value.trim();
-  if(!nm){alert('프로젝트명을 입력하세요');return;}
-  const aid=document.getElementById('si-acc').value;
-  const {data:acc} = await sb.from('hkcloud_accounts').select('name').eq('id',aid).single();
-  const {error} = await sb.from('hkcloud_si_projects').insert({
-    code:document.getElementById('si-code').value,
-    account_id:parseInt(aid), account_name:acc?.name||'',
-    name:nm, amount:parseInt(document.getElementById('si-amt').value)||0,
-    start_date:document.getElementById('si-start').value||null,
-    end_date:document.getElementById('si-end').value||null,
-    stage:'영업제안', pm:document.getElementById('si-pm').value,
-    sales_rep:document.getElementById('si-rep').value,
-    note:document.getElementById('si-note').value,
-    created_by:currentUser.id
-  });
-  if(error){alert('오류: '+error.message);return;}
-  ['si-code','si-name','si-amt','si-pm','si-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  await fillAll(); renderSIProject();
+async function addSIProj(){
+  const nm=document.getElementById('sin').value.trim();if(!nm){alert('프로젝트명 입력');return;}
+  const aid=document.getElementById('sia').value;
+  const {data:acc}=await sb.from('hkcloud_accounts').select('name').eq('id',aid).single();
+  await sb.from('hkcloud_si_projects').insert({code:document.getElementById('sic').value,account_id:parseInt(aid),account_name:acc?.name||'',name:nm,amount:parseA(document.getElementById('sim').value),start_date:document.getElementById('sis').value||null,end_date:document.getElementById('sie').value||null,stage:'수주확정',sales_rep:document.getElementById('sir').value,note:document.getElementById('sino').value});
+  ['sic','sin','sim','sino'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  await fillDrops();renderSIProj();
 }
 
-// ── SI 청구 일정 빌더 ─────────────────────────────────────────
-function initBillLines(){const c=document.getElementById('bill-lines');if(c){c.innerHTML='';addBillLine();}}
-function addBillLine(){
-  const c=document.getElementById('bill-lines');const i=c.children.length;
-  const d=document.createElement('div');d.className='bill-row';
-  d.innerHTML=`<div class="fg"><label class="flbl">구분</label><select class="fi" id="bl-t-${i}"><option>선금</option><option>중도금</option><option>중도금1차</option><option>중도금2차</option><option>중도금3차</option><option>잔금</option><option>기타</option></select></div><div class="fg"><label class="flbl">예정일</label><input class="fi" id="bl-d-${i}" type="date" value="${todayStr}"></div><div class="fg"><label class="flbl">공급가 (원)</label><input class="fi" id="bl-a-${i}" type="number" placeholder="0" oninput="const v=Math.floor((parseInt(this.value)||0)/10);document.getElementById('bl-v-${i}').value=v"></div><div class="fg"><label class="flbl">VAT</label><input class="fi" id="bl-v-${i}" type="number" readonly style="background:#f8fafc"></div><div class="fg" style="justify-content:flex-end;padding-top:14px"><button class="btn btn-danger btn-sm" onclick="this.closest('.bill-row').remove()">삭제</button></div>`;
-  c.appendChild(d);
+// SI 청구
+async function renderSIBill(){
+  const {data:rows=[]}=await sb.from('hkcloud_billings').select('*').eq('source_type','SI').order('bill_date');
+  document.getElementById('tb-sib').innerHTML=rows.map(b=>billRow(b,'renderSIBill')).join('')||noD(10);
 }
-async function saveSISales(){
-  if(!canEdit())return;
-  const pid=parseInt(document.getElementById('sis-proj').value);
-  const itype=document.getElementById('sis-itype').value;
-  const {data:pjs} = await sb.from('hkcloud_si_projects').select('*').eq('id',pid).single();
-  if(!pjs){alert('프로젝트를 선택하세요');return;}
-  const rows=document.getElementById('bill-lines').children;
-  const inserts=[];
-  for(let i=0;i<rows.length;i++){
-    const btype=document.getElementById(`bl-t-${i}`)?.value;
-    const bdate=document.getElementById(`bl-d-${i}`)?.value;
-    const bamt=parseInt(document.getElementById(`bl-a-${i}`)?.value)||0;
-    const bvat=parseInt(document.getElementById(`bl-v-${i}`)?.value)||0;
-    if(!bdate||!bamt)continue;
-    inserts.push({source_type:'SI',source_id:pid,account_id:pjs.account_id,account_name:pjs.account_name,source_name:pjs.name,bill_date:bdate,amount:bamt,vat:bvat,bill_type:btype||'기타',status:'미발행',sales_rep:pjs.sales_rep,issue_type:itype,inv_no:'',created_by:currentUser.id});
-  }
-  if(!inserts.length){alert('청구 항목을 입력하세요');return;}
-  const {error} = await sb.from('hkcloud_billings').insert(inserts);
-  if(error){alert('오류: '+error.message);return;}
-  initBillLines(); alert(`${inserts.length}건 저장 완료`); renderSISales();
-}
-async function renderSISales(){
-  const rep=document.getElementById('sis-frep')?.value||'';
-  let q=sb.from('hkcloud_billings').select('*').eq('source_type','SI').order('bill_date');
-  if(rep)q=q.eq('sales_rep',rep);
-  const {data:rows=[]} = await q;
-  document.getElementById('tbl-si-sales').innerHTML=rows.map(b=>`<tr><td><div class="acc-cell">${av(b.account_name||'')}<span>${b.account_name||''}</span></div></td><td style="font-size:10px;color:#94a3b8">${(b.source_name||'').slice(0,14)}</td><td style="font-size:10px;color:#94a3b8">${b.sales_rep||'-'}</td><td><span class="bdg b-gray" style="font-size:9px">${b.bill_type||''}</span></td><td>${ibdg(b.issue_type)}</td><td style="color:#94a3b8;font-size:10px">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmt(b.amount)}만</td><td style="text-align:right;color:#94a3b8">${fmt(b.vat)}만</td><td>${bdg(b.status)}</td><td style="font-size:10px;color:#4361ee;cursor:pointer" onclick="openInvNo(${b.id},renderSISales)">${b.inv_no||'번호입력'}</td><td>${NXT[b.status]&&canEdit()?`<button class="btn btn-g btn-sm" onclick="chgStat(${b.id},'${NXT[b.status]}',renderSISales)">→ ${NXT[b.status]}</button>`:'<span style="color:#94a3b8;font-size:10px">-</span>'}</td></tr>`).join('')||noData(11);
+async function addSIBill(){
+  const pid=parseInt(document.getElementById('sibp').value);
+  const {data:pj}=await sb.from('hkcloud_si_projects').select('*').eq('id',pid).single();if(!pj){alert('프로젝트 선택');return;}
+  const amt=parseA(document.getElementById('siba').value);if(!amt){alert('금액 입력');return;}
+  await sb.from('hkcloud_billings').insert({source_type:'SI',source_id:pid,account_id:pj.account_id,account_name:pj.account_name,source_name:pj.name,bill_date:document.getElementById('sibd').value||tod,amount:amt,vat:Math.floor(amt/10),bill_type:document.getElementById('sibt').value,status:'미발행',issue_type:document.getElementById('sibm').value,inv_no:''});
+  document.getElementById('siba').value='';renderSIBill();
 }
 
-// ── SI 매입 ───────────────────────────────────────────────────
-async function renderSIPurchase(){
-  const {data:pjs=[]} = await sb.from('hkcloud_si_projects').select('id,account_name,name').order('name');
-  document.getElementById('sip-proj').innerHTML='<option value="">없음</option>'+pjs.map(p=>`<option value="${p.id}">${p.account_name} — ${p.name}</option>`).join('');
-  const {data:rows=[]} = await sb.from('hkcloud_si_purchases').select('*').order('issue_date',{ascending:false});
-  document.getElementById('tbl-sip').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:10px">${r.issue_date||''}</td><td style="font-weight:500">${r.vendor||''}</td><td style="font-size:10px;color:#94a3b8">${r.proj_name||'-'}</td><td style="font-size:10px">${r.category||''}</td><td style="text-align:right;font-weight:600">${fmt(r.amount)}만</td><td style="text-align:right;color:#94a3b8">${fmt(r.vat)}만</td><td>${alink(r.file_name,r.file_url)}</td><td style="font-size:10px;color:#94a3b8">${r.note||'-'}</td></tr>`).join('')||noData(8);
+// SI 매입
+async function renderSIBuyList(){
+  const {data:rows=[]}=await sb.from('hkcloud_si_purchases').select('*').order('issue_date',{ascending:false});
+  document.getElementById('tb-sibuy').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:12px">${r.issue_date||''}</td><td style="font-weight:500">${r.vendor}</td><td style="font-size:12px;color:#94a3b8">${r.proj_name||'-'}</td><td style="font-size:12px">${r.category||''}</td><td style="text-align:right;font-weight:600">${fmtA(r.amount)}원</td></tr>`).join('')||noD(5);
 }
-async function addSIPurchase(){
-  if(!canEdit())return;
-  const v=document.getElementById('sip-vendor').value.trim();if(!v){alert('매입처를 입력하세요');return;}
-  const pid=document.getElementById('sip-proj').value;
-  const {data:pj} = pid ? await sb.from('hkcloud_si_projects').select('name').eq('id',pid).single() : {data:null};
-  const {error} = await sb.from('hkcloud_si_purchases').insert({
-    vendor:v, proj_id:pid?parseInt(pid):null, proj_name:pj?.name||'',
-    issue_date:document.getElementById('sip-date').value||null,
-    amount:parseInt(document.getElementById('sip-amt').value)||0,
-    vat:parseInt(document.getElementById('sip-vat').value)||0,
-    category:document.getElementById('sip-cat').value,
-    doc_type:document.getElementById('sip-doctype').value,
-    file_name:document.getElementById('sip-fname')?.value||'',
-    file_url:document.getElementById('sip-furl')?.value||'',
-    note:document.getElementById('sip-note')?.value||'',
-    created_by:currentUser.id
-  });
-  if(error){alert('오류: '+error.message);return;}
-  ['sip-vendor','sip-fname','sip-furl','sip-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('sip-doctype').value=''; toggleAttach('sip');
-  renderSIPurchase();
+async function addSIBuy(){
+  const v=document.getElementById('sibv').value.trim();if(!v){alert('매입처 입력');return;}
+  const pid=document.getElementById('sibpr').value;
+  const {data:pj}=pid?await sb.from('hkcloud_si_projects').select('name').eq('id',pid).single():{data:null};
+  await sb.from('hkcloud_si_purchases').insert({vendor:v,proj_id:pid?parseInt(pid):null,proj_name:pj?.name||'',issue_date:document.getElementById('sibdt').value||null,amount:parseA(document.getElementById('sibam').value),category:document.getElementById('sibcat').value});
+  document.getElementById('sibv').value='';document.getElementById('sibam').value='';renderSIBuyList();
 }
 
-// ── SI 손익 ───────────────────────────────────────────────────
-async function renderPnL(){
-  const rep=document.getElementById('pnl-frep')?.value||'';
-  let q=sb.from('hkcloud_si_projects').select('*').order('created_at');
-  if(rep)q=q.eq('sales_rep',rep);
-  const {data:pjs=[]} = await q;
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('source_id,amount,status').eq('source_type','SI');
-  const {data:purch=[]} = await sb.from('hkcloud_si_purchases').select('proj_id,amount');
-  document.getElementById('tbl-pnl').innerHTML=pjs.map(p=>{
-    const paid=bills.filter(b=>b.source_id===p.id&&b.status==='입금완료').reduce((s,b)=>s+(b.amount||0),0);
-    const cost=purch.filter(x=>x.proj_id===p.id).reduce((s,x)=>s+(x.amount||0),0);
-    const pnl=paid-cost; const margin=paid?Math.round(pnl/paid*100):0;
-    return `<tr><td style="font-size:10px;color:#4361ee">${p.code||'-'}</td><td>${p.account_name||''}</td><td style="font-weight:500">${p.name||''}</td><td style="font-size:10px;color:#94a3b8">${p.sales_rep||'-'}</td><td style="text-align:right">${fmt(p.amount||0)}만</td><td style="text-align:right;color:#10b981">${fmt(paid)}만</td><td style="text-align:right;color:#f87171">${fmt(cost)}만</td><td class="${pnl>=0?'pnl-pos':'pnl-neg'}" style="text-align:right">${fmt(pnl)}만</td><td class="${pnl>=0?'pnl-pos':'pnl-neg'}" style="text-align:right">${margin}%</td></tr>`;
-  }).join('')||noData(9);
-}
-
-// ── 슬라이드 패널 ──────────────────────────────────────────
-function openPanel(title, html){
-  document.getElementById('panel-title').textContent = title;
-  document.getElementById('panel-body').innerHTML = html;
-  document.getElementById('detail-panel').classList.add('open');
-  document.getElementById('panel-overlay').classList.add('open');
-}
-function closePanel(){
-  document.getElementById('detail-panel').classList.remove('open');
-  document.getElementById('panel-overlay').classList.remove('open');
-}
-
-async function openAccPanel(aid){
-  const {data:a} = await sb.from('hkcloud_accounts').select('*').eq('id',aid).single();
-  if(!a) return;
-  const {data:ses=[]} = await sb.from('hkcloud_se_contracts').select('*').eq('account_id',aid).order('created_at',{ascending:false});
-  const {data:sis=[]} = await sb.from('hkcloud_si_projects').select('*').eq('account_id',aid).order('created_at',{ascending:false});
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('*').eq('account_id',aid).order('bill_date',{ascending:false}).limit(10);
-  const TAG={SI:'tsi',SE:'tse','혼합':'tpr'};
-  let html = `
-    <div class="panel-section">
-      <div class="panel-section-title">기본 정보</div>
-      <div class="panel-row"><span class="panel-lbl">상호</span><span class="panel-val">${a.name||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">사업자번호</span><span class="panel-val">${a.biz_no||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">담당자</span><span class="panel-val">${a.contact||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">전화번호</span><span class="panel-val">${a.phone||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">영업담당</span><span class="panel-val">${a.sales_rep||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">구분</span><span class="panel-val"><span class="ttag ${TAG[a.tag]||'tsi'}">${a.tag||'-'}</span></span></div>
-    </div>`;
-  if(ses.length){
-    html += `<div class="panel-section"><div class="panel-section-title">SE 유지보수 계약 (${ses.length}건)</div>`;
-    ses.forEach(s=>{
-      const dl=s.end_date?Math.round((new Date(s.end_date)-today)/86400000):0;
-      html+=`<div style="background:#f8fafc;border-radius:8px;padding:9px 11px;margin-bottom:6px;font-size:11px">
-        <div style="font-weight:600;margin-bottom:3px">${s.code?'['+s.code+'] ':''} ${s.name}</div>
-        <div style="color:#94a3b8">${s.start_date||'-'} ~ ${s.end_date||'-'} · ${bdg(s.status||'유효')}</div>
-        <div style="color:#4361ee;font-weight:600;margin-top:2px">${fmt(s.amount||0)}만/회 · ${CYCLE_LBL[s.cycle]||s.cycle}</div>
-        ${s.end_date?`<div style="color:${dl<=30?'#ef4444':dl<=90?'#f59e0b':'#64748b'};font-weight:600">D-${dl}</div>`:''}
-      </div>`;
-    });
-    html += '</div>';
-  }
-  if(sis.length){
-    html += `<div class="panel-section"><div class="panel-section-title">SI 프로젝트 (${sis.length}건)</div>`;
-    sis.forEach(p=>{
-      html+=`<div style="background:#f8fafc;border-radius:8px;padding:9px 11px;margin-bottom:6px;font-size:11px">
-        <div style="font-weight:600;margin-bottom:3px">${p.code?'['+p.code+'] ':''} ${p.name}</div>
-        <div style="color:#94a3b8">${p.start_date||'-'} ~ ${p.end_date||'-'} · ${bdg(p.stage||'진행중')}</div>
-        <div style="color:#10b981;font-weight:600;margin-top:2px">${fmt(p.amount||0)}만원</div>
-      </div>`;
-    });
-    html += '</div>';
-  }
-  if(bills.length){
-    html += `<div class="panel-section"><div class="panel-section-title">최근 청구 이력</div>`;
-    bills.forEach(b=>{
-      const dc={'입금완료':'#10b981','발행완료':'#f59e0b','미발행':'#ef4444','검수대기':'#fb923c'}[b.status]||'#94a3b8';
-      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f8fafc;font-size:11px">
-        <div><div style="font-weight:500">${(b.source_name||'').slice(0,20)}</div><div style="color:#94a3b8;font-size:10px">${b.bill_date||''}</div></div>
-        <div style="text-align:right"><div style="font-weight:600">${fmt(b.amount||0)}만</div><span class="bdg" style="background:${dc}22;color:${dc};font-size:9px">${b.status}</span></div>
-      </div>`;
-    });
-    html += '</div>';
-  }
-  openPanel(a.name, html);
-}
-
-async function openSIPanel(pid){
-  const {data:p} = await sb.from('hkcloud_si_projects').select('*').eq('id',pid).single();
-  if(!p) return;
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('*').eq('source_type','SI').eq('source_id',pid).order('bill_date');
-  const {data:purch=[]} = await sb.from('hkcloud_si_purchases').select('*').eq('proj_id',pid).order('issue_date',{ascending:false});
-  const paid=bills.filter(b=>b.status==='입금완료').reduce((s,b)=>s+(b.amount||0),0);
-  const cost=purch.reduce((s,p)=>s+(p.amount||0),0);
-  const pnl=paid-cost; const pct=p.amount?Math.round(paid/p.amount*100):0;
-  let html = `
-    <div class="panel-section">
-      <div class="panel-section-title">프로젝트 정보</div>
-      <div class="panel-row"><span class="panel-lbl">Job Code</span><span class="panel-val" style="color:#4361ee;font-weight:700">${p.code||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">거래처</span><span class="panel-val">${p.account_name||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">프로젝트명</span><span class="panel-val">${p.name||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">상태</span><span class="panel-val">${bdg(p.stage||'진행중')}</span></div>
-      <div class="panel-row"><span class="panel-lbl">기간</span><span class="panel-val">${p.start_date||'-'} ~ ${p.end_date||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">PM</span><span class="panel-val">${p.pm||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">영업담당</span><span class="panel-val">${p.sales_rep||'-'}</span></div>
-    </div>
-    <div class="panel-section">
-      <div class="panel-section-title">손익 현황</div>
-      <div class="panel-row"><span class="panel-lbl">계약금액</span><span class="panel-val">${fmt(p.amount||0)}만</span></div>
-      <div class="panel-row"><span class="panel-lbl">입금완료</span><span class="panel-val" style="color:#10b981">${fmt(paid)}만</span></div>
-      <div class="panel-row"><span class="panel-lbl">매입합계</span><span class="panel-val" style="color:#f87171">${fmt(cost)}만</span></div>
-      <div class="panel-row"><span class="panel-lbl">손익</span><span class="panel-val" style="color:${pnl>=0?'#10b981':'#ef4444'};font-weight:700">${fmt(pnl)}만</span></div>
-      <div style="margin-top:8px;background:#f1f5f9;border-radius:6px;height:6px;overflow:hidden"><div style="height:100%;background:#4361ee;width:${pct}%;border-radius:6px"></div></div>
-      <div style="font-size:10px;color:#94a3b8;text-align:right;margin-top:2px">입금 진행률 ${pct}%</div>
-    </div>`;
-  if(bills.length){
-    html += `<div class="panel-section"><div class="panel-section-title">청구 일정</div>`;
-    bills.forEach(b=>{
-      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f8fafc;font-size:11px">
-        <div><span class="bdg b-gray" style="font-size:9px">${b.bill_type||''}</span> <span style="color:#94a3b8">${b.bill_date||''}</span></div>
-        <div style="text-align:right"><span style="font-weight:600">${fmt(b.amount||0)}만</span> ${bdg(b.status)}</div>
-      </div>`;
-    });
-    html += '</div>';
-  }
-  openPanel((p.code?'['+p.code+'] ':'')+p.name, html);
-}
-
-async function openSEPanel(cid){
-  const {data:c} = await sb.from('hkcloud_se_contracts').select('*').eq('id',cid).single();
-  if(!c) return;
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('*').eq('source_type','SE').eq('source_id',cid).order('bill_date',{ascending:false}).limit(12);
-  const dl=c.end_date?Math.round((new Date(c.end_date)-today)/86400000):0;
-  const paid=bills.filter(b=>b.status==='입금완료').reduce((s,b)=>s+(b.amount||0),0);
-  let html = `
-    <div class="panel-section">
-      <div class="panel-section-title">계약 정보</div>
-      <div class="panel-row"><span class="panel-lbl">Job Code</span><span class="panel-val" style="color:#06b6d4;font-weight:700">${c.code||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">거래처</span><span class="panel-val">${c.account_name||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">계약명</span><span class="panel-val">${c.name||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">상태</span><span class="panel-val">${bdg(c.status||'유효')}</span></div>
-      <div class="panel-row"><span class="panel-lbl">기간</span><span class="panel-val">${c.start_date||'-'} ~ ${c.end_date||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">D-day</span><span class="panel-val" style="color:${dl<=30?'#ef4444':dl<=90?'#f59e0b':'#64748b'};font-weight:700">D-${dl}</span></div>
-      <div class="panel-row"><span class="panel-lbl">청구주기</span><span class="panel-val">${CYCLE_LBL[c.cycle]||c.cycle}</span></div>
-      <div class="panel-row"><span class="panel-lbl">1회 금액</span><span class="panel-val" style="color:#4361ee;font-weight:700">${fmt(c.amount||0)}만</span></div>
-      <div class="panel-row"><span class="panel-lbl">발행방식</span><span class="panel-val">${ibdg(c.issue_type)}</span></div>
-      <div class="panel-row"><span class="panel-lbl">영업담당</span><span class="panel-val">${c.sales_rep||'-'}</span></div>
-      <div class="panel-row"><span class="panel-lbl">연간 입금</span><span class="panel-val" style="color:#10b981">${fmt(paid)}만</span></div>
-    </div>`;
-  if(bills.length){
-    html += `<div class="panel-section"><div class="panel-section-title">최근 청구 내역</div>`;
-    bills.forEach(b=>{
-      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:11px">
-        <span style="color:#94a3b8">${b.bill_date||''}</span>
-        <div>${fmt(b.amount||0)}만 ${bdg(b.status)}</div>
-      </div>`;
-    });
-    html += '</div>';
-  }
-  openPanel((c.code?'['+c.code+'] ':'')+c.name, html);
-}
-
-// ── SE 계약 등록 시 code 저장 ──────────────────────────────
-async function renderSEContract(){
-  const rep=document.getElementById('sec-frep')?.value||'';
-  let q=sb.from('hkcloud_se_contracts').select('*').order('created_at',{ascending:false});
-  if(rep)q=q.eq('sales_rep',rep);
-  const {data:cs=[]} = await q;
-  document.getElementById('tbl-se-cont').innerHTML=cs.map(c=>{
-    const dl=c.end_date?Math.round((new Date(c.end_date)-today)/86400000):999;
+// SE 계약
+async function renderSECont(){
+  await fillDrops();
+  const {data:cs=[]}=await sb.from('hkcloud_se_contracts').select('*').order('created_at',{ascending:false});
+  document.getElementById('tb-sec').innerHTML=cs.map(c=>{
+    const dl=c.end_date?Math.round((new Date(c.end_date)-today)/864e5):999;
     const dc=dl<=30?'#ef4444':dl<=90?'#f59e0b':'#64748b';
-    return `<tr style="cursor:pointer" onclick="openSEPanel(${c.id})"><td style="font-size:10px;color:#06b6d4;font-weight:700">${c.code||'-'}</td><td>${c.account_name||''}</td><td style="font-weight:500">${c.name||''}</td><td style="font-size:10px;color:#94a3b8">${c.sales_rep||'-'}</td><td><span class="bdg b-blue" style="font-size:9px">${CYCLE_LBL[c.cycle]||c.cycle}</span></td><td>${ibdg(c.issue_type)}</td><td>${bdg(c.status||'유효')}</td><td style="text-align:right;font-weight:600">${fmt(c.amount||0)}만</td><td style="color:#94a3b8;font-size:10px">${c.end_date||'-'}</td><td style="font-weight:700;color:${dc}">${c.end_date?'D-'+dl:'-'}</td><td onclick="event.stopPropagation()">${canEdit()?`<button class="btn btn-g btn-sm" onclick="addSoGup(${c.id})">소급</button>`:'-'}</td></tr>`;
-  }).join('')||noData(11);
+    return`<tr><td style="color:#06b6d4;font-size:11px;font-weight:700">${c.code||'-'}</td><td>${c.account_name}</td><td style="font-weight:500">${c.name}</td><td style="font-size:11px">${CL[c.cycle]||c.cycle}</td><td style="font-size:11px">${c.issue_type||''}</td><td>${bdg(c.status||'유효')}</td><td style="text-align:right;font-weight:600">${fmtA(c.amount||0)}원</td><td style="color:#94a3b8;font-size:12px">${c.end_date||'-'}</td><td style="font-weight:700;color:${dc}">${c.end_date?'D-'+dl:'-'}</td><td><button class="btn bg sm" onclick="addSogup(${c.id})">소급</button></td></tr>`;
+  }).join('')||noD(10);
 }
-async function addSEContract(){
-  if(!canEdit())return;
-  const nm=document.getElementById('se-name').value.trim();if(!nm){alert('계약명을 입력하세요');return;}
-  const aid=document.getElementById('se-acc').value;
-  const {data:acc} = await sb.from('hkcloud_accounts').select('name').eq('id',aid).single();
-  const amt=parseInt(document.getElementById('se-amt').value)||0;
-  const start=document.getElementById('se-start').value;
-  const end=document.getElementById('se-end').value;
-  const bday=parseInt(document.getElementById('se-bday').value)||25;
-  const cycle=document.getElementById('se-cycle').value;
-  const itype=document.getElementById('se-itype').value;
-  const rep=document.getElementById('se-rep').value;
-  const code=document.getElementById('se-code')?.value||'';
-  const {data:cont,error} = await sb.from('hkcloud_se_contracts').insert({code,account_id:parseInt(aid),account_name:acc?.name||'',name:nm,start_date:start||null,end_date:end||null,amount:amt,bill_day:bday,cycle,issue_type:itype,status:'유효',sales_rep:rep,created_by:currentUser.id}).select().single();
+async function addSECont(){
+  const nm=document.getElementById('sen').value.trim();if(!nm){alert('계약명 입력');return;}
+  const aid=document.getElementById('sea').value;
+  const {data:acc}=await sb.from('hkcloud_accounts').select('name').eq('id',aid).single();
+  const amt=parseA(document.getElementById('seam').value);
+  const start=document.getElementById('ses').value,end=document.getElementById('see').value;
+  const bday=parseInt(document.getElementById('sebd').value)||25;
+  const cycle=document.getElementById('secy').value;
+  const itype=document.getElementById('seim').value;
+  const {data:ct,error}=await sb.from('hkcloud_se_contracts').insert({code:document.getElementById('sec').value,account_id:parseInt(aid),account_name:acc?.name||'',name:nm,start_date:start||null,end_date:end||null,amount:amt,bill_day:bday,cycle,issue_type:itype,status:'유효'}).select().single();
   if(error){alert('오류: '+error.message);return;}
   if(start&&end&&amt){
     const cm={monthly:1,quarter:3,half:6,annual:12}[cycle]||1;
-    const inserts=[];
-    let cur=new Date(start);cur.setDate(1);
+    const ins=[];let cur=new Date(start);cur.setDate(1);
     while(cur<=new Date(end)){
       const ld=new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate();
       const bd=new Date(cur.getFullYear(),cur.getMonth(),Math.min(bday,ld));
-      inserts.push({source_type:'SE',source_id:cont.id,account_id:parseInt(aid),account_name:acc?.name||'',source_name:nm,bill_date:iso(bd),amount:amt,vat:Math.floor(amt/10),bill_type:CYCLE_LBL[cycle]+'정기',status:'미발행',sales_rep:rep,issue_type:itype,inv_no:'',created_by:currentUser.id});
+      ins.push({source_type:'SE',source_id:ct.id,account_id:parseInt(aid),account_name:acc?.name||'',source_name:nm,bill_date:iso(bd),amount:amt,vat:Math.floor(amt/10),bill_type:CL[cycle]+'정기',status:'미발행',issue_type:itype,inv_no:''});
       cur.setMonth(cur.getMonth()+cm);
     }
-    if(inserts.length) await sb.from('hkcloud_billings').insert(inserts);
+    if(ins.length)await sb.from('hkcloud_billings').insert(ins);
   }
-  document.getElementById('se-name').value=''; if(document.getElementById('se-code'))document.getElementById('se-code').value=''; await fillAll(); renderSEContract();
-  alert('계약 등록 완료');
+  ['sec','sen','seam'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  await fillDrops();renderSECont();alert('등록 완료');
 }
-async function addSoGup(cid){
-  if(!canEdit())return;
-  const {data:c} = await sb.from('hkcloud_se_contracts').select('*').eq('id',cid).single();
-  if(!c)return;
-  const date=prompt('소급 발행 예정일 (YYYY-MM-DD):',todayStr);if(!date)return;
-  const note=prompt('소급 사유:','소급적용');
-  await sb.from('hkcloud_billings').insert({source_type:'SE',source_id:cid,account_id:c.account_id,account_name:c.account_name,source_name:c.name,bill_date:date,amount:c.amount,vat:Math.floor(c.amount/10),bill_type:'소급적용',status:'미발행',sales_rep:c.sales_rep,issue_type:c.issue_type,inv_no:'',note:note||'',created_by:currentUser.id});
-  alert('소급 청구 추가 완료'); renderSEContract();
+async function addSogup(cid){
+  const {data:c}=await sb.from('hkcloud_se_contracts').select('*').eq('id',cid).single();if(!c)return;
+  const dt=prompt('소급 예정일 (YYYY-MM-DD):',tod);if(!dt)return;
+  await sb.from('hkcloud_billings').insert({source_type:'SE',source_id:cid,account_id:c.account_id,account_name:c.account_name,source_name:c.name,bill_date:dt,amount:c.amount,vat:Math.floor(c.amount/10),bill_type:'소급',status:'미발행',issue_type:c.issue_type,inv_no:''});
+  alert('소급 추가 완료');renderSECont();
 }
 
-// ── SE 갱신 ───────────────────────────────────────────────────
-async function renderSERenew(){
-  const d90=new Date();d90.setDate(d90.getDate()+90);
-  const {data:cs=[]} = await sb.from('hkcloud_se_contracts').select('*').neq('status','만료').lte('end_date',iso(d90)).order('end_date');
-  const list=document.getElementById('renew-list');
-  if(!cs.length){list.innerHTML='<div style="text-align:center;color:#94a3b8;padding:40px">갱신 임박 계약이 없습니다</div>';return;}
-  list.innerHTML=cs.map(c=>{
-    const dl=c.end_date?Math.round((new Date(c.end_date)-today)/86400000):0;
-    const dc=dl<=30?'#ef4444':dl<=60?'#f59e0b':'#64748b';
-    const curStep=c.renew_stage||'';
-    return `<div class="renew-card"><div class="renew-hd"><div><div style="font-weight:600;font-size:13px">${c.account_name||''} — ${c.name||''}</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">종료: ${c.end_date||'-'} · ${fmt(c.amount||0)}만/회 · ${c.sales_rep||'-'}</div></div><div style="font-weight:700;color:${dc};font-size:13px">D-${dl}</div></div><div class="renew-steps">${RENEW_STEPS.map(s=>`<div class="renew-step ${curStep===s?'active':RENEW_STEPS.indexOf(curStep)>RENEW_STEPS.indexOf(s)?'done':''}" onclick="setRenewStage(${c.id},'${s}')">${s}</div>`).join('')}</div></div>`;
-  }).join('');
-}
-async function setRenewStage(cid,stage){
-  if(!canEdit())return;
-  const upd={renew_stage:stage};
-  if(stage==='계약완료')upd.status='유효';
-  if(stage==='해지확정')upd.status='해지예정';
-  await sb.from('hkcloud_se_contracts').update(upd).eq('id',cid);
-  renderSERenew();
-}
-
-// ── SE 청구 ───────────────────────────────────────────────────
-async function renderSESales(){
-  const rep=document.getElementById('ses-frep')?.value||'';
-  const stat=document.getElementById('ses-fstat')?.value||'';
+// SE 청구
+async function renderSEBill(){
+  const stat=document.getElementById('se-fstat')?.value||'';
   let q=sb.from('hkcloud_billings').select('*').eq('source_type','SE').order('bill_date');
-  if(rep)q=q.eq('sales_rep',rep);
   if(stat)q=q.eq('status',stat);
-  const {data:rows=[]} = await q;
-  document.getElementById('tbl-se-sales').innerHTML=rows.map(b=>`<tr><td><div class="acc-cell">${av(b.account_name||'')}<span>${b.account_name||''}</span></div></td><td style="font-size:10px;color:#94a3b8">${(b.source_name||'').slice(0,14)}</td><td style="font-size:10px;color:#94a3b8">${b.sales_rep||'-'}</td><td><span class="bdg b-gray" style="font-size:9px">${b.bill_type||''}</span></td><td>${ibdg(b.issue_type)}</td><td style="color:#94a3b8;font-size:10px">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmt(b.amount)}만</td><td style="text-align:right;color:#94a3b8">${fmt(b.vat)}만</td><td>${bdg(b.status)}</td><td style="font-size:10px;color:#4361ee;cursor:pointer" onclick="openInvNo(${b.id},renderSESales)">${b.inv_no||'번호입력'}</td><td>${NXT[b.status]&&canEdit()?`<button class="btn btn-g btn-sm" onclick="chgStat(${b.id},'${NXT[b.status]}',renderSESales)">→ ${NXT[b.status]}</button>`:'<span style="color:#94a3b8;font-size:10px">-</span>'}</td></tr>`).join('')||noData(11);
-}
-async function addSEBilling(){
-  if(!canEdit())return;
-  const cid=parseInt(document.getElementById('ses-cont').value);
-  const {data:c} = await sb.from('hkcloud_se_contracts').select('*').eq('id',cid).single();
-  if(!c){alert('계약을 선택하세요');return;}
-  const amt=parseInt(document.getElementById('ses-amt').value)||c.amount;
-  await sb.from('hkcloud_billings').insert({source_type:'SE',source_id:cid,account_id:c.account_id,account_name:c.account_name,source_name:c.name,bill_date:document.getElementById('ses-date').value||isoNow(),amount:amt,vat:Math.floor(amt/10),bill_type:document.getElementById('ses-type').value,status:'미발행',sales_rep:c.sales_rep,issue_type:document.getElementById('ses-itype').value,inv_no:'',note:document.getElementById('ses-note').value,created_by:currentUser.id});
-  document.getElementById('ses-note').value=''; renderSESales();
+  const {data:rows=[]}=await q;
+  document.getElementById('tb-seb').innerHTML=rows.map(b=>billRow(b,'renderSEBill')).join('')||noD(10);
 }
 
-// ── SE 매입 ───────────────────────────────────────────────────
-async function renderSEPurchase(){
-  const {data:rows=[]} = await sb.from('hkcloud_se_purchases').select('*').order('issue_date',{ascending:false});
-  document.getElementById('tbl-sep').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:10px">${r.issue_date||''}</td><td style="font-weight:500">${r.vendor||''}</td><td style="font-size:10px;color:#94a3b8">${r.cont_name||'-'}</td><td style="text-align:right;font-weight:600">${fmt(r.amount)}만</td><td>${alink(r.file_name,r.file_url)}</td></tr>`).join('')||noData(5);
+// SE 매입
+async function renderSEBuyList(){
+  const {data:rows=[]}=await sb.from('hkcloud_se_purchases').select('*').order('issue_date',{ascending:false});
+  document.getElementById('tb-sebuy').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:12px">${r.issue_date||''}</td><td style="font-weight:500">${r.vendor}</td><td style="font-size:12px;color:#94a3b8">${r.cont_name||'-'}</td><td style="text-align:right;font-weight:600">${fmtA(r.amount)}원</td></tr>`).join('')||noD(4);
 }
-async function addSEPurchase(){
-  if(!canEdit())return;
-  const v=document.getElementById('sep-vendor').value.trim();if(!v){alert('매입처를 입력하세요');return;}
-  const cid=document.getElementById('sep-cont').value;
-  const {data:c} = cid ? await sb.from('hkcloud_se_contracts').select('name').eq('id',cid).single() : {data:null};
-  await sb.from('hkcloud_se_purchases').insert({vendor:v,cont_id:cid?parseInt(cid):null,cont_name:c?.name||'',issue_date:document.getElementById('sep-date').value||null,amount:parseInt(document.getElementById('sep-amt').value)||0,doc_type:document.getElementById('sep-doctype').value,file_name:document.getElementById('sep-fname')?.value||'',file_url:document.getElementById('sep-furl')?.value||'',created_by:currentUser.id});
-  ['sep-vendor','sep-fname','sep-furl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('sep-doctype').value=''; toggleAttach('sep'); renderSEPurchase();
+async function addSEBuy(){
+  const v=document.getElementById('sebv').value.trim();if(!v){alert('매입처 입력');return;}
+  const cid=document.getElementById('sebco').value;
+  const {data:c}=cid?await sb.from('hkcloud_se_contracts').select('name').eq('id',cid).single():{data:null};
+  await sb.from('hkcloud_se_purchases').insert({vendor:v,cont_id:cid?parseInt(cid):null,cont_name:c?.name||'',issue_date:document.getElementById('sebdt').value||null,amount:parseA(document.getElementById('sebam').value)});
+  document.getElementById('sebv').value='';document.getElementById('sebam').value='';renderSEBuyList();
 }
 
-// ── 단품 ─────────────────────────────────────────────────────
-async function renderProd(){
-  const {data:rows=[]} = await sb.from('hkcloud_prod_sales').select('*').order('sale_date',{ascending:false});
-  document.getElementById('tbl-prod').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:10px">${r.sale_date||''}</td><td>${r.account_name||''}</td><td style="font-weight:500">${r.name||''}</td><td style="text-align:center">${r.qty||1}</td><td style="text-align:right">${fmt(r.price||0)}만</td><td style="text-align:right;font-weight:600">${fmt((r.qty||1)*(r.price||0))}만</td></tr>`).join('')||noData(6);
+// 제경비
+async function renderExp(){
+  const {data:rows=[]}=await sb.from('hkcloud_expenses').select('*').order('expense_date',{ascending:false});
+  document.getElementById('tb-exp').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:12px">${r.expense_date||''}</td><td><span class="bdg bgy">${r.category||''}</span></td><td style="font-size:12px;color:#64748b">${r.note||'-'}</td><td style="text-align:right;font-weight:600">${fmtA(r.amount)}원</td></tr>`).join('')||noD(4);
 }
-async function addProd(){
-  if(!canEdit())return;
-  const nm=document.getElementById('pd-name').value.trim();if(!nm){alert('상품명을 입력하세요');return;}
-  const aid=document.getElementById('pd-acc').value;
-  const {data:acc} = await sb.from('hkcloud_accounts').select('name').eq('id',aid).single();
-  const qty=parseInt(document.getElementById('pd-qty').value)||1;
-  const price=parseInt(document.getElementById('pd-price').value)||0;
-  const date=document.getElementById('pd-date').value||isoNow();
-  const pdcode=document.getElementById('pd-code')?.value||'';
-  const {data:ps} = await sb.from('hkcloud_prod_sales').insert({account_id:parseInt(aid),account_name:acc?.name||'',name:pdcode?`[${pdcode}] ${nm}`:nm,qty,price,sale_date:date,created_by:currentUser.id}).select().single();
+async function addExp(){
+  const am=parseA(document.getElementById('exam').value);if(!am){alert('금액 입력');return;}
+  await sb.from('hkcloud_expenses').insert({category:document.getElementById('excat').value,expense_date:document.getElementById('exdt').value||tod,amount:am,note:document.getElementById('exno').value||''});
+  document.getElementById('exam').value='';document.getElementById('exno').value='';renderExp();
+}
+
+// 단품 매출
+async function renderPdSale(){
+  await fillDrops();
+  const {data:rows=[]}=await sb.from('hkcloud_prod_sales').select('*').order('sale_date',{ascending:false});
+  document.getElementById('tb-pds').innerHTML=rows.map(r=>`<tr><td style="color:#10b981;font-size:11px;font-weight:700">${r.code||'-'}</td><td style="color:#94a3b8;font-size:12px">${r.sale_date||''}</td><td>${r.account_name}</td><td style="font-weight:500">${r.name}</td><td style="text-align:center">${r.qty||1}</td><td style="text-align:right">${fmtA(r.price||0)}원</td><td style="text-align:right;font-weight:600">${fmtA((r.qty||1)*(r.price||0))}원</td></tr>`).join('')||noD(7);
+}
+async function addPdSale(){
+  const nm=document.getElementById('pdn').value.trim();if(!nm){alert('상품명 입력');return;}
+  const aid=document.getElementById('pda').value;
+  const {data:acc}=await sb.from('hkcloud_accounts').select('name').eq('id',aid).single();
+  const qty=parseInt(document.getElementById('pdq').value)||1,price=parseA(document.getElementById('pdp').value);
+  const dt=document.getElementById('pdd').value||tod,code=document.getElementById('pdc').value;
+  const {data:ps}=await sb.from('hkcloud_prod_sales').insert({code,account_id:parseInt(aid),account_name:acc?.name||'',name:nm,qty,price,sale_date:dt}).select().single();
   const tot=qty*price;
-  await sb.from('hkcloud_billings').insert({source_type:'단품',source_id:ps.id,account_id:parseInt(aid),account_name:acc?.name||'',source_name:nm,bill_date:date,amount:tot,vat:Math.floor(tot/10),bill_type:'단품',status:'미발행',sales_rep:'',issue_type:'홈택스',inv_no:'',created_by:currentUser.id});
-  document.getElementById('pd-name').value=''; renderProd();
-}
-async function renderPB(){
-  const {data:rows=[]} = await sb.from('hkcloud_prod_purchases').select('*').order('issue_date',{ascending:false});
-  document.getElementById('tbl-pb').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:10px">${r.issue_date||''}</td><td style="font-weight:500">${r.vendor||''}</td><td style="text-align:right;font-weight:600">${fmt(r.amount)}만</td><td>${alink(r.file_name,r.file_url)}</td><td style="font-size:10px;color:#94a3b8">${r.note||'-'}</td></tr>`).join('')||noData(5);
-}
-async function addPB(){
-  if(!canEdit())return;
-  const v=document.getElementById('pb-vendor').value.trim();if(!v){alert('매입처를 입력하세요');return;}
-  await sb.from('hkcloud_prod_purchases').insert({vendor:v,issue_date:document.getElementById('pb-date').value||null,amount:parseInt(document.getElementById('pb-amt').value)||0,doc_type:document.getElementById('pb-doctype').value,file_name:document.getElementById('pb-fname')?.value||'',file_url:document.getElementById('pb-furl')?.value||'',note:document.getElementById('pb-note').value,created_by:currentUser.id});
-  ['pb-vendor','pb-fname','pb-furl','pb-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('pb-doctype').value=''; toggleAttach('pb'); renderPB();
+  await sb.from('hkcloud_billings').insert({source_type:'단품',source_id:ps.id,account_id:parseInt(aid),account_name:acc?.name||'',source_name:nm,bill_date:dt,amount:tot,vat:Math.floor(tot/10),bill_type:'단품',status:'미발행',issue_type:'홈택스',inv_no:''});
+  ['pdc','pdn'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('pdp').value='';
+  renderPdSale();
 }
 
-// ── 세금계산서 ────────────────────────────────────────────────
+// 단품 매입
+async function renderPdBuy(){
+  const {data:rows=[]}=await sb.from('hkcloud_prod_purchases').select('*').order('issue_date',{ascending:false});
+  document.getElementById('tb-pdb').innerHTML=rows.map(r=>`<tr><td style="color:#94a3b8;font-size:12px">${r.issue_date||''}</td><td style="font-weight:500">${r.vendor}</td><td style="text-align:right;font-weight:600">${fmtA(r.amount)}원</td><td style="font-size:12px;color:#94a3b8">${r.note||'-'}</td></tr>`).join('')||noD(4);
+}
+async function addPdBuy(){
+  const v=document.getElementById('pdbv').value.trim();if(!v){alert('매입처 입력');return;}
+  await sb.from('hkcloud_prod_purchases').insert({vendor:v,issue_date:document.getElementById('pdbdt').value||null,amount:parseA(document.getElementById('pdbam').value),note:document.getElementById('pdbno').value||''});
+  document.getElementById('pdbv').value='';document.getElementById('pdbam').value='';renderPdBuy();
+}
+
+// 세금계산서
 async function renderTax(){
-  const sel=document.getElementById('tx-mon');if(sel.options.length<=1)for(let m=1;m<=12;m++)sel.add(new Option(m+'월',m));
-  const year=document.getElementById('tx-year').value;
-  const mon=document.getElementById('tx-mon').value;
-  const type=document.getElementById('tx-type').value;
-  const stat=document.getElementById('tx-stat').value;
-  const issue=document.getElementById('tx-issue').value;
-  const rep=document.getElementById('tx-rep').value;
-  let q=sb.from('hkcloud_billings').select('*').gte('bill_date',`${year}-01-01`).lte('bill_date',`${year}-12-31`).order('bill_date');
-  if(mon!='0')q=q.gte('bill_date',`${year}-${String(mon).padStart(2,'0')}-01`).lte('bill_date',`${year}-${String(mon).padStart(2,'0')}-31`);
-  if(type)q=q.eq('source_type',type);
-  if(stat)q=q.eq('status',stat);
-  if(issue)q=q.eq('issue_type',issue);
-  if(rep)q=q.eq('sales_rep',rep);
-  const {data:rows=[]} = await q;
-  document.getElementById('tbl-tax').innerHTML=rows.map(x=>`<tr><td><div class="acc-cell">${av(x.account_name||'')}<span>${x.account_name||''}</span></div></td><td style="font-size:10px;color:#94a3b8">${x.sales_rep||'-'}</td><td>${ttag(x.source_type)}</td><td style="font-size:10px;color:#94a3b8">${(x.source_name||'').slice(0,14)}</td><td>${ibdg(x.issue_type)}</td><td style="color:#94a3b8;font-size:10px">${x.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmt(x.amount)}만</td><td style="text-align:right;color:#94a3b8">${fmt(x.vat)}만</td><td>${bdg(x.status)}</td><td style="font-size:10px;color:#4361ee;cursor:pointer" onclick="openInvNo(${x.id},renderTax)">${x.inv_no||'번호입력'}</td><td>${NXT[x.status]&&canEdit()?`<button class="btn btn-g btn-sm" onclick="chgStat(${x.id},'${NXT[x.status]}',renderTax)">→ ${NXT[x.status]}</button>`:'<span style="color:#94a3b8;font-size:10px">-</span>'}</td></tr>`).join('')||noData(11);
+  const sel=document.getElementById('tx-mo');if(sel.options.length<=1)for(let m=1;m<=12;m++)sel.add(new Option(m+'월',m));
+  const yr=document.getElementById('tx-yr').value,mo=document.getElementById('tx-mo').value;
+  const ty=document.getElementById('tx-ty').value,st=document.getElementById('tx-st').value;
+  let q=sb.from('hkcloud_billings').select('*').gte('bill_date',yr+'-01-01').lte('bill_date',yr+'-12-31').order('bill_date');
+  if(mo!='0')q=q.gte('bill_date',`${yr}-${String(mo).padStart(2,'0')}-01`).lte('bill_date',`${yr}-${String(mo).padStart(2,'0')}-31`);
+  if(ty)q=q.eq('source_type',ty);if(st)q=q.eq('status',st);
+  const {data:rows=[]}=await q;
+  document.getElementById('tb-tax').innerHTML=rows.map(b=>billRow(b,'renderTax')).join('')||noD(10);
 }
 
-// ── 세금계산서 번호 ──────────────────────────────────────────
+// 거래처
+async function renderAcc(){
+  const {data:rows=[]}=await sb.from('hkcloud_accounts').select('*').order('name');
+  document.getElementById('tb-acc').innerHTML=rows.map(r=>`<tr><td style="font-weight:500">${r.name}</td><td><span class="ttag ${r.tag==='SI'?'tsi':r.tag==='SE'?'tse':'tpr'}">${r.tag||''}</span></td><td style="font-size:12px;color:#64748b">${r.contact||'-'}</td><td style="font-size:12px;color:#94a3b8">${r.phone||'-'}</td><td style="font-size:12px;color:#94a3b8">${r.biz_no||'-'}</td></tr>`).join('')||noD(5);
+}
+async function addAcc(){
+  const nm=document.getElementById('acn').value.trim();if(!nm){alert('상호 입력');return;}
+  await sb.from('hkcloud_accounts').insert({name:nm,biz_no:document.getElementById('acb').value,contact:document.getElementById('acc2').value,phone:document.getElementById('acp').value,tag:document.getElementById('act').value});
+  document.getElementById('acn').value='';await fillDrops();renderAcc();
+}
+
+// 공통 청구 행
+function billRow(b,cbName){
+  const ty=b.source_type;
+  return`<tr><td>${b.account_name||''}</td><td><span class="ttag ${ty==='SI'?'tsi':ty==='SE'?'tse':'tpr'}">${ty}</span></td><td style="font-size:11px;color:#94a3b8">${(b.source_name||'').slice(0,14)}</td><td style="font-size:11px">${b.issue_type||''}</td><td style="color:#94a3b8;font-size:12px">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmtA(b.amount)}원</td><td style="text-align:right;color:#94a3b8">${fmtA(b.vat)}원</td><td>${bdg(b.status)}</td><td style="font-size:11px;color:#4361ee;cursor:pointer" onclick="openInvNo(${b.id},${cbName})">${b.inv_no||'번호입력'}</td><td>${NXT[b.status]?`<button class="btn bg sm" onclick="chgSt(${b.id},'${NXT[b.status]}',${cbName})">→${NXT[b.status]}</button>`:'-'}</td></tr>`;
+}
+
+// 상태 변경
+async function chgSt(id,ns,cb){
+  if(ns==='발행완료'){openInvNo(id,async()=>{await sb.from('hkcloud_billings').update({status:ns}).eq('id',id);if(cb)cb();});return;}
+  await sb.from('hkcloud_billings').update({status:ns}).eq('id',id);if(cb)cb();
+}
+
+// 계산서 번호
 function openInvNo(id,cb){
-  if(!canEdit())return;
-  invnoPendingId=id; invnoPendingCb=cb;
+  invId=id;invCb=cb;
   sb.from('hkcloud_billings').select('inv_no').eq('id',id).single().then(({data})=>{
-    document.getElementById('invno-input').value=data?.inv_no||'';
-    document.getElementById('invno-modal').classList.add('open');
-    setTimeout(()=>document.getElementById('invno-input').focus(),100);
+    document.getElementById('invno-in').value=data?.inv_no||'';
+    document.getElementById('invno-bg').style.display='flex';
+    setTimeout(()=>document.getElementById('invno-in').focus(),100);
   });
 }
 async function saveInvNo(){
-  const no=document.getElementById('invno-input').value.trim();
-  if(invnoPendingId){
-    await sb.from('hkcloud_billings').update({inv_no:no}).eq('id',invnoPendingId);
-    if(invnoPendingCb)invnoPendingCb();
-  }
-  closeModal('invno-modal'); invnoPendingId=null; invnoPendingCb=null;
+  const no=document.getElementById('invno-in').value.trim();
+  if(invId){await sb.from('hkcloud_billings').update({inv_no:no}).eq('id',invId);if(invCb)invCb();}
+  closeInvNo();
 }
-document.getElementById('invno-input').addEventListener('keydown',e=>{if(e.key==='Enter')saveInvNo()});
+function closeInvNo(){document.getElementById('invno-bg').style.display='none';invId=null;invCb=null;}
+document.getElementById('invno-in').addEventListener('keydown',e=>{if(e.key==='Enter')saveInvNo()});
+document.getElementById('invno-bg').addEventListener('click',function(e){if(e.target===this)closeInvNo()});
 
-// ── 상태 변경 ─────────────────────────────────────────────────
-async function chgStat(id,ns,cb){
-  if(!canEdit())return;
-  if(ns==='발행완료'){
-    openInvNo(id, async()=>{
-      await sb.from('hkcloud_billings').update({status:ns}).eq('id',id);
-      if(cb)cb();
-    });
-    return;
-  }
-  await sb.from('hkcloud_billings').update({status:ns}).eq('id',id);
-  if(cb)cb();
+// 청구일정 팝업
+async function showBills(pid,pname){
+  const {data:bl=[]}=await sb.from('hkcloud_billings').select('*').eq('source_type','SI').eq('source_id',pid).order('bill_date');
+  const rows=bl.map(b=>`<tr><td>${b.bill_type||''}</td><td>${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmtA(b.amount)}원</td><td>${bdg(b.status)}</td><td style="font-size:11px;color:#4361ee">${b.inv_no||'-'}</td></tr>`).join('')||noD(5);
+  const w=window.open('','_blank','width=600,height=500');
+  w.document.write(`<html><head><meta charset="UTF-8"><style>body{font-family:'Malgun Gothic',sans-serif;padding:20px;font-size:13px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #f1f5f9;text-align:left}th{font-size:11px;color:#94a3b8}h3{margin-bottom:12px}.bdg{display:inline-block;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700}.br{background:#fff0f0;color:#c53030}.bo{background:#fff7ed;color:#c2410c}.by{background:#fffbea;color:#92400e}.bg2{background:#f0fff4;color:#276749}.bb{background:#eff6ff;color:#1d4ed8}</style></head><body><h3>📋 청구 일정 — ${pname}</h3><table><thead><tr><th>구분</th><th>예정일</th><th>공급가</th><th>상태</th><th>계산서번호</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
 }
 
-// ── 월 마감 ───────────────────────────────────────────────────
-async function renderClosing(){
-  const sel=document.getElementById('cl-mon');
-  if(sel.options.length===0)for(let m=1;m<=12;m++)sel.add(new Option(m+'월',m));
-  if(!sel.value)sel.value=today.getMonth()+1;
-  const year=document.getElementById('cl-year').value;
-  const mon=String(sel.value).padStart(2,'0');
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('*').gte('bill_date',`${year}-${mon}-01`).lte('bill_date',`${year}-${mon}-31`).order('bill_date');
-  const total=bills.length; const done=bills.filter(b=>b.status==='입금완료').length;
-  document.getElementById('closing-summary').innerHTML=`전체 ${total}건 · 입금완료 ${done}건 · 진행률 ${total?Math.round(done/total*100):0}%`;
-  document.getElementById('closing-list').innerHTML=bills.map(b=>`<div class="check-item ${b.status==='입금완료'?'done':''}"><input type="checkbox" ${b.status==='입금완료'?'checked':''} onchange="chgStat(${b.id},this.checked?'입금완료':'발행완료',renderClosing)" ${!canEdit()?'disabled':''}><div class="check-label ${b.status==='입금완료'?'done-text':''}">${b.account_name||''} <span class="ttag ${b.source_type==='SI'?'tsi':b.source_type==='SE'?'tse':'tpr'}">${b.source_type}</span> <span style="font-size:10px;color:#94a3b8">${(b.source_name||'').slice(0,14)}</span></div><div class="check-meta">${fmt(b.amount)}만 · ${b.bill_date||''}</div><div>${bdg(b.status)}</div></div>`).join('')||'<div style="text-align:center;color:#94a3b8;padding:30px">해당 월 청구 데이터가 없습니다</div>';
-}
-
-// ── 거래처 ────────────────────────────────────────────────────
-async function renderAcc(){
-  const q=document.getElementById('acc-search')?.value.toLowerCase()||'';
-  let query=sb.from('hkcloud_accounts').select('*').order('name');
-  if(q)query=query.ilike('name',`%${q}%`);
-  const {data:accs=[]} = await query;
-  const {data:ses=[]} = await sb.from('hkcloud_se_contracts').select('account_id,name,amount,status');
-  const {data:sis=[]} = await sb.from('hkcloud_si_projects').select('account_id,name,amount,stage');
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('account_id,amount,status,bill_date,source_name,source_type,issue_type').order('bill_date',{ascending:false});
-  const TAG={SI:'tsi',SE:'tse','혼합':'tpr'};
-  document.getElementById('acc-history-list').innerHTML=accs.map(a=>{
-    const aSes=ses.filter(s=>s.account_id===a.id);
-    const aSis=sis.filter(s=>s.account_id===a.id);
-    const aBils=bills.filter(b=>b.account_id===a.id).slice(0,5);
-    const[bg,c]=avC(a.name||'A');
-    return `<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="openAccPanel(${a.id})"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="background:${bg};color:${c};width:32px;height:32px;font-size:11px">${(a.name||'').replace(/[(주)]/g,'').trim().slice(0,2)}</div><div><div style="font-weight:700;font-size:13px">${a.name||''}</div><div style="font-size:11px;color:#94a3b8">${a.contact||'-'} · ${a.phone||'-'} · 영업: ${a.sales_rep||'-'}</div></div></div><span class="ttag ${TAG[a.tag]||'tsi'}">${a.tag||''}</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px"><div style="background:#f8fafc;border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:#94a3b8;margin-bottom:3px">SE 계약</div>${aSes.length?aSes.map(s=>`<div>${s.name.slice(0,14)} <span style="color:#4361ee">${fmt(s.amount||0)}만/회</span></div>`).join(''):'<div style="color:#e2e8f0">없음</div>'}</div><div style="background:#f8fafc;border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:#94a3b8;margin-bottom:3px">SI 프로젝트</div>${aSis.length?aSis.map(s=>`<div>${s.name.slice(0,14)} <span style="color:#10b981">${fmt(s.amount||0)}만</span></div>`).join(''):'<div style="color:#e2e8f0">없음</div>'}</div><div style="background:#f8fafc;border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:#94a3b8;margin-bottom:3px">최근 청구</div>${aBils.length?`<div style="color:#4361ee">${fmt(aBils.reduce((s,b)=>s+(b.amount||0),0))}만 (${aBils.length}건)</div>`:'<div style="color:#e2e8f0">없음</div>'}</div></div><div style="font-size:10px;font-weight:600;color:#64748b;margin-bottom:5px">최근 청구 이력</div><div class="timeline">${aBils.length?aBils.map(b=>{const dc={'입금완료':'#10b981','발행완료':'#f59e0b','미발행':'#ef4444','검수대기':'#fb923c'}[b.status]||'#94a3b8';return `<div class="tl-item"><div class="tl-dot" style="background:${dc}"></div><div class="tl-content"><div class="tl-date">${b.bill_date||''}</div><div class="tl-title">${(b.source_name||'').slice(0,18)} — ${fmt(b.amount||0)}만</div><div class="tl-sub">${ttag(b.source_type)} ${bdg(b.status)} ${ibdg(b.issue_type)}</div></div></div>`}).join(''):'<div style="color:#94a3b8;font-size:11px">이력 없음</div>'}</div></div>`;
-  }).join('')||'<div style="text-align:center;color:#94a3b8;padding:30px">등록된 거래처가 없습니다</div>';
-}
-async function addAcc(){
-  if(!canEdit())return;
-  const nm=document.getElementById('ac-name').value.trim();if(!nm){alert('상호를 입력하세요');return;}
-  const {error} = await sb.from('hkcloud_accounts').insert({name:nm,biz_no:document.getElementById('ac-biz').value,contact:document.getElementById('ac-contact').value,phone:document.getElementById('ac-phone').value,tag:document.getElementById('ac-tag').value,sales_rep:document.getElementById('ac-rep').value,created_by:currentUser.id});
-  if(error){alert('오류: '+error.message);return;}
-  document.getElementById('ac-name').value=''; await fillAll(); renderAcc();
-}
-
-// ── 영업담당별 ────────────────────────────────────────────────
-async function renderSalesRep(){
-  const year=document.getElementById('sr-year').value;
-  const rep=document.getElementById('sr-rep').value;
-  const {data:yb=[]} = await sb.from('hkcloud_billings').select('sales_rep,source_type,amount,bill_date,account_name,source_name,status').gte('bill_date',`${year}-01-01`).lte('bill_date',`${year}-12-31`);
-  const reps = await getReps();
-  const repD={};reps.forEach(r=>repD[r]={si:0,se:0,prod:0});
-  yb.forEach(b=>{const r=b.sales_rep;if(!r)return;if(!repD[r])repD[r]={si:0,se:0,prod:0};if(b.source_type==='SI')repD[r].si+=(b.amount||0);else if(b.source_type==='SE')repD[r].se+=(b.amount||0);else repD[r].prod+=(b.amount||0);});
-  document.getElementById('rep-cards').innerHTML=Object.entries(repD).map(([r,v])=>`<div class="rep-card"><div class="rc-name">👤 ${r}</div><div class="rc-row"><span class="rc-lbl">SI</span><span class="rc-val">${fmt(v.si)}만</span></div><div class="rc-row"><span class="rc-lbl">SE</span><span class="rc-val">${fmt(v.se)}만</span></div><div class="rc-row"><span class="rc-lbl">단품</span><span class="rc-val">${fmt(v.prod)}만</span></div><div class="rc-total"><span>합계</span><span style="color:#4361ee">${fmt(v.si+v.se+v.prod)}만</span></div></div>`).join('');
-  let detail=yb;if(rep)detail=detail.filter(b=>b.sales_rep===rep);
-  document.getElementById('tbl-sr').innerHTML=detail.map(b=>`<tr><td style="font-size:10px;font-weight:600;color:#4361ee">${b.sales_rep||'-'}</td><td><div class="acc-cell">${av(b.account_name||'')}<span>${b.account_name||''}</span></div></td><td>${ttag(b.source_type)}</td><td style="font-size:10px;color:#94a3b8">${(b.source_name||'').slice(0,16)}</td><td style="color:#94a3b8;font-size:10px">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmt(b.amount||0)}만</td><td>${bdg(b.status)}</td></tr>`).join('')||noData(7);
-}
-
-// ── 청구일정 모달 ────────────────────────────────────────────
-async function showBillModal(pid,pname){
-  const {data:bills=[]} = await sb.from('hkcloud_billings').select('*').eq('source_type','SI').eq('source_id',pid).order('bill_date');
-  document.getElementById('bill-modal-title').textContent=`청구 일정 — ${pname}`;
-  document.getElementById('tbl-bill-modal').innerHTML=bills.map(b=>`<tr><td><span class="bdg b-gray" style="font-size:9px">${b.bill_type||''}</span></td><td>${ibdg(b.issue_type)}</td><td style="color:#94a3b8">${b.bill_date||''}</td><td style="text-align:right;font-weight:600">${fmt(b.amount)}만</td><td style="text-align:right;color:#94a3b8">${fmt(b.vat)}만</td><td>${bdg(b.status)}</td><td style="font-size:10px;color:#4361ee">${b.inv_no||'-'}</td></tr>`).join('')||noData(7);
-  document.getElementById('bill-modal').classList.add('open');
-}
-
-// ── 사용자 관리 (admin) ──────────────────────────────────────
-async function inviteUser(){
-  if(!canAdmin()){alert('관리자만 사용할 수 있습니다');return;}
-  const email = document.getElementById('inv-email').value.trim();
-  const name  = document.getElementById('inv-name').value.trim();
-  const role  = document.getElementById('inv-role').value;
-  const pw    = document.getElementById('inv-pw').value;
-  if(!email||!name){alert('이름과 이메일을 입력하세요');return;}
-  if(!pw||pw.length<8){alert('비밀번호는 8자 이상이어야 합니다');return;}
-
-  // signUp으로 계정 생성 (이메일 확인 비활성화 상태에서 바로 생성)
-  const {data, error} = await sb.auth.signUp({email, password:pw});
-  if(error){
-    alert('계정 생성 오류: '+error.message+'\n\n해결: Supabase → Authentication → Settings → Email Confirmations OFF');
-    return;
-  }
-  if(data?.user){
-    // 프로필 업데이트
-    const {error:pe} = await sb.from('hkcloud_profiles')
-      .upsert({id:data.user.id, email, name, role},{onConflict:'id'});
-    if(pe) console.warn('프로필 업데이트 오류:', pe.message);
-    alert(`✅ '${name}' 계정이 생성되었습니다.\n이메일: ${email}\n권한: ${role}\n\n팀원에게 이메일과 비밀번호를 전달하세요.`);
-    document.getElementById('inv-email').value='';
-    document.getElementById('inv-name').value='';
-    document.getElementById('inv-pw').value='';
-    loadUsers();
-  } else {
-    alert('계정 생성 후 이메일 확인이 필요한 상태입니다.\nSupabase → Authentication → Settings → Enable email confirmations 를 OFF로 설정해주세요.');
-  }
-}
-async function loadUsers(){
-  if(!canAdmin())return;
-  const {data:profiles=[]} = await sb.from('hkcloud_profiles').select('*').order('created_at');
-  const roleClass={admin:'role-admin',manager:'role-manager',sales:'role-sales',viewer:'role-viewer'};
-  const roleLabel={admin:'관리자',manager:'매니저',sales:'영업',viewer:'열람'};
-  document.getElementById('user-list').innerHTML=profiles.length?profiles.map(p=>`
-    <div class="user-card">
-      <div class="user-info">
-        <div class="user-av">${(p.name||p.email||'?').slice(0,1).toUpperCase()}</div>
-        <div><div class="user-name">${p.name||'-'}</div><div class="user-email">${p.email||''}</div></div>
-      </div>
-      <div class="user-actions">
-        <span class="header-role ${roleClass[p.role]||'role-viewer'}">${roleLabel[p.role]||p.role}</span>
-        ${p.id!==currentUser.id?`<select class="fsel" onchange="changeUserRole('${p.id}',this.value)">
-          <option value="admin" ${p.role==='admin'?'selected':''}>관리자</option>
-          <option value="manager" ${p.role==='manager'?'selected':''}>매니저</option>
-          <option value="sales" ${p.role==='sales'?'selected':''}>영업</option>
-          <option value="viewer" ${p.role==='viewer'?'selected':''}>열람</option>
-        </select>`:'<span style="font-size:11px;color:#94a3b8">(본인)</span>'}
-      </div>
-    </div>`).join(''):'<div class="loading">등록된 사용자가 없습니다</div>';
-}
-async function changeUserRole(uid,role){
-  if(!canAdmin())return;
-  await sb.from('hkcloud_profiles').update({role}).eq('id',uid);
-  alert('권한이 변경되었습니다');loadUsers();
-}
-
-// ── 설정 ──────────────────────────────────────────────────────
-async function renderSettings(){
-  const reps = await getReps();
-  document.getElementById('rep-tag-list').innerHTML=reps.map(r=>`<div class="tag-item">${r}<span class="tag-del" onclick="delRepSetting('${r}')">×</span></div>`).join('');
-}
-async function addRepSetting(){
-  const nm=document.getElementById('new-rep-name').value.trim();if(!nm)return;
-  const reps = await getReps();
-  if(!reps.includes(nm)){
-    reps.push(nm);
-    await sb.from('hkcloud_settings').upsert({key:'sales_reps',value:reps,updated_at:new Date().toISOString()});
-  }
-  document.getElementById('new-rep-name').value='';
-  await fillAll(); renderSettings();
-}
-async function delRepSetting(nm){
-  if(!confirm(`'${nm}' 담당자를 삭제하시겠습니까?`))return;
-  const reps = (await getReps()).filter(r=>r!==nm);
-  await sb.from('hkcloud_settings').upsert({key:'sales_reps',value:reps,updated_at:new Date().toISOString()});
-  await fillAll(); renderSettings();
-}
-async function changePw(){
-  const pw=document.getElementById('new-pw').value;
-  const pw2=document.getElementById('new-pw2').value;
-  if(!pw||pw.length<8){alert('비밀번호는 8자 이상이어야 합니다');return;}
-  if(pw!==pw2){alert('비밀번호가 일치하지 않습니다');return;}
-  const {error} = await sb.auth.updateUser({password:pw});
-  if(error){alert('오류: '+error.message);return;}
-  alert('비밀번호가 변경되었습니다');
-  document.getElementById('new-pw').value=''; document.getElementById('new-pw2').value='';
-}
-
-// ── Enter 키 로그인 ──────────────────────────────────────────
-document.getElementById('login-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pw').focus()});
-
-// ── 날짜 기본값 ──────────────────────────────────────────────
-document.querySelectorAll('input[type="date"]').forEach(el=>{if(!el.value)el.value=todayStr});
-const clmon=document.getElementById('cl-mon');
-if(clmon&&clmon.options.length===0)for(let m=1;m<=12;m++)clmon.add(new Option(m+'월',m));
+// 날짜 기본값
+document.querySelectorAll('input[type="date"]').forEach(el=>{if(!el.value)el.value=tod});
 </script>
 </body>
 </html>
